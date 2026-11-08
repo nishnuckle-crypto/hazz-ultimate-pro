@@ -393,40 +393,120 @@ if (module === 'news') {
             type="button"
             class="ai-analyze-button"
             data-index="${index}">
-            ✨ ANALYZE WITH AI
+            📊 FREE MARKET ANALYSIS
           </button>
 
           <div class="ai-analysis-result"></div>
         </div>
       `).join('');
 
-      feed.querySelectorAll('.ai-analyze-button').forEach(button => {
-        button.addEventListener('click', async () => {
+      
+feed.querySelectorAll('.ai-analyze-button').forEach(button => {
+  button.addEventListener('click', () => {
 
-          const article = articles[Number(button.dataset.index)];
-          const card = button.closest('.news-card');
-          const resultBox = card.querySelector('.ai-analysis-result');
+    const article = articles[Number(button.dataset.index)];
+    const resultBox = button.closest('.news-card')
+      .querySelector('.ai-analysis-result');
 
-          if (!article || !resultBox) return;
+    if (!article || !resultBox) return;
 
-          button.disabled = true;
-          button.textContent = 'AI ANALYZING...';
+    button.disabled = true;
+    button.textContent = 'ANALYZING MARKET...';
 
-          resultBox.innerHTML =
-            '<p>AI is analyzing this news. Please wait...</p>';
+    const title = article.title.toLowerCase();
 
-          try {
-            const aiResponse = await fetch('/api/ai-news', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                title: article.title,
-                source: article.source,
-                published_at: article.published_at
-              })
-            });
+    const bullishWords = [
+      'rally', 'surge', 'gain', 'rise', 'rising',
+      'strong', 'rebound', 'dovish', 'rate cut',
+      'weak dollar', 'dollar weakens'
+    ];
+
+    const bearishWords = [
+      'crash', 'fall', 'drop', 'decline',
+      'selloff', 'hawkish', 'rate hike',
+      'strong dollar', 'dollar strengthens'
+    ];
+
+    const bullishCount = bullishWords.filter(
+      word => title.includes(word)
+    ).length;
+
+    const bearishCount = bearishWords.filter(
+      word => title.includes(word)
+    ).length;
+
+    let sentiment = 'NEUTRAL';
+
+    if (bullishCount > bearishCount) {
+      sentiment = 'BULLISH';
+    } else if (bearishCount > bullishCount) {
+      sentiment = 'BEARISH';
+    }
+
+    let goldImpact = 'UNCERTAIN';
+    let usdImpact = 'UNCERTAIN';
+
+    if (title.includes('dollar weakens') ||
+        title.includes('weak dollar')) {
+      goldImpact = 'POTENTIALLY BULLISH';
+      usdImpact = 'BEARISH';
+    }
+
+    if (title.includes('dollar strengthens') ||
+        title.includes('strong dollar')) {
+      goldImpact = 'POTENTIALLY BEARISH';
+      usdImpact = 'BULLISH';
+    }
+
+    let analysis =
+      'The headline does not provide enough information for a reliable directional conclusion.';
+
+    if (sentiment === 'BULLISH') {
+      analysis =
+        'Positive market-related keywords detected. Monitor price action and confirmation before taking a position.';
+    }
+
+    if (sentiment === 'BEARISH') {
+      analysis =
+        'Negative market-related keywords detected. Monitor price action and confirmation before taking a position.';
+    }
+
+    resultBox.innerHTML = `
+      <div class="ai-analysis-panel">
+        <h4>📊 FREE MARKET ANALYSIS</h4>
+
+        <p><b>MARKET SENTIMENT:</b> ${sentiment}</p>
+
+        <p><b>GOLD IMPACT (XAUUSD):</b>
+          ${goldImpact}
+        </p>
+
+        <p><b>USD IMPACT:</b>
+          ${usdImpact}
+        </p>
+
+        <p><b>MARKET ANALYSIS:</b>
+          ${analysis}
+        </p>
+
+        <p><b>RISK NOTE:</b>
+          Headline-based keyword analysis only.
+          Confirm with live price action, economic data
+          and technical indicators.
+        </p>
+
+        <p><small>
+          FREE ENGINE • NO OPENAI API REQUIRED
+        </small></p>
+      </div>
+    `;
+
+    button.disabled = false;
+    button.textContent = '📊 FREE MARKET ANALYSIS';
+
+  });
+});
+
 
             const aiData = await aiResponse.json();
 
@@ -497,7 +577,7 @@ if (module === 'news') {
 
           } finally {
             button.disabled = false;
-            button.textContent = '✨ ANALYZE WITH AI';
+            button.textContent = '📊 FREE MARKET ANALYSIS';
           }
 
         });
