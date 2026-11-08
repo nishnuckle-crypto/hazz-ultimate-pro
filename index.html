@@ -1065,21 +1065,72 @@ return;
         : c < o ? 'BEARISH CANDLE'
         : 'NEUTRAL CANDLE';
 
-      result.innerHTML = `
-        <h4>TECHNICAL ANALYSIS RESULT</h4>
-        <p>SYMBOL: ${document.getElementById('analysisSymbol').value}</p>
-        <p>TIMEFRAME: ${document.getElementById('analysisTimeframe').value}</p>
-        <p>CANDLE DIRECTION: ${direction}</p>
-        <p>CANDLE PATTERN: ${candlePattern}</p>
-        <p>PRICE RANGE: ${range}</p>
-        <p>BODY SIZE: ${body}</p>
-        <p>BODY STRENGTH: ${bodyPercent.toFixed(2)}%</p>
-        <p>OPEN: ${o}</p>
-        <p>HIGH: ${h}</p>
-        <p>LOW: ${l}</p>
-        <p>CLOSE: ${c}</p>
-        <p>NOTE: Up to three-candle pattern analysis. No BUY/SELL signal generated.</p>
-      `;
+      const directionClass =
+  c > o ? 'bullish' : c < o ? 'bearish' : 'neutral';
+
+const patternClass =
+  /BULLISH|MORNING STAR|THREE WHITE SOLDIERS|HAMMER/.test(candlePattern)
+    ? 'bullish'
+    : /BEARISH|EVENING STAR|THREE BLACK CROWS|SHOOTING STAR/.test(candlePattern)
+      ? 'bearish'
+      : 'neutral';
+
+result.innerHTML = `
+  <div class="technical-result">
+    <h4>TECHNICAL ANALYSIS RESULT</h4>
+
+    <div class="result-row">
+      <span class="result-label">SYMBOL</span>
+      <span class="result-value">${document.getElementById('analysisSymbol').value}</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">TIMEFRAME</span>
+      <span class="result-value">${document.getElementById('analysisTimeframe').value}</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">CANDLE DIRECTION</span>
+      <span class="result-value ${directionClass}">${direction}</span>
+    </div>
+
+    <div class="pattern-box ${patternClass}">
+      ${candlePattern}
+    </div>
+
+    <div class="result-row">
+      <span class="result-label">PRICE RANGE</span>
+      <span class="result-value">${range}</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">BODY SIZE</span>
+      <span class="result-value">${body}</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">BODY STRENGTH</span>
+      <span class="result-value">${bodyPercent.toFixed(2)}%</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">OPEN</span>
+      <span class="result-value">${o}</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">HIGH</span>
+      <span class="result-value">${h}</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">LOW</span>
+      <span class="result-value">${l}</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">CLOSE</span>
+      <span class="result-value">${c}</span>
+    </div>
+
+    <p class="result-note">
+      UP TO THREE-CANDLE PATTERN ANALYSIS.
+      NO BUY/SELL SIGNAL GENERATED.
+    </p>
+  </div>
+`;
     });
 
   return;
