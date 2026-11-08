@@ -86,7 +86,33 @@ button{width:100%;padding:14px;margin-top:12px;background:#d9b56d;border:0;borde
   font-size: 10px;
   letter-spacing: 1px;
 }
-</style>
+.news-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.sentiment-tag,
+.impact-tag {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  border: 1px solid #806735;
+}
+
+.sentiment-tag {
+  color: #d9b56d;
+  background: #211b10;
+}
+
+.impact-tag {
+  color: #fff;
+  background: #252525;
+}</style>
 </head>
 <body>
 <header>
@@ -262,6 +288,16 @@ if (module === 'news') {
           <h4>${escapeHTML(article.title)}</h4>
           <p>${escapeHTML(article.source)}</p>
           <span>${escapeHTML(article.published_at)}</span>
+
+<div class="news-tags">
+  <span class="sentiment-tag">
+    ${escapeHTML(article.sentiment)}
+  </span>
+
+  <span class="impact-tag">
+    IMPACT: ${escapeHTML(article.impact)}
+  </span>
+</div>
           <p><a href="${escapeHTML(article.url)}"
             target="_blank" rel="noopener noreferrer">
             READ FULL NEWS ↗
