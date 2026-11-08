@@ -20,6 +20,47 @@ button{width:100%;padding:14px;margin-top:12px;background:#d9b56d;border:0;borde
 .switch{background:#292929;color:white}
 .muted{color:#999;font-size:12px;text-align:center}
 #dashboard{display:none}
+
+.module-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 22px 0;
+}
+
+.module-grid button {
+  background: linear-gradient(135deg,#252016,#111);
+  color: #d9b56d;
+  border: 1px solid #806735;
+  border-radius: 9px;
+  padding: 18px;
+  text-align: left;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+.module-grid button:active {
+  background: #40331c;
+}
+
+.module-content {
+  background: #090909;
+  border: 1px solid #403727;
+  border-radius: 9px;
+  padding: 18px;
+  min-height: 130px;
+  margin-bottom: 15px;
+}
+
+.module-content h3 {
+  color: #d9b56d;
+  font-size: 14px;
+}
+
+.module-content p {
+  color: #999;
+  font-size: 12px;
+}
 </style>
 </head>
 <body>
@@ -39,12 +80,27 @@ button{width:100%;padding:14px;margin-top:12px;background:#d9b56d;border:0;borde
 <p class="muted" id="message"></p>
 </section>
 
+
 <section class="panel" id="dashboard">
-<h2>WELCOME TO HAZZ ULTIMATE PRO</h2>
-<p class="muted" id="userEmail"></p>
-<p class="muted">AI TRADING INTELLIGENCE</p>
-<button id="logoutButton">LOGOUT</button>
+  <h2>HAZZ ULTIMATE PRO</h2>
+  <p class="muted" id="userEmail"></p>
+
+  <div class="module-grid">
+    <button onclick="openModule('news')">📰 AI NEWS INTELLIGENCE</button>
+    <button onclick="openModule('signals')">📈 AI SIGNAL ENGINE</button>
+    <button onclick="openModule('calendar')">📅 ECONOMIC CALENDAR</button>
+    <button onclick="openModule('analysis')">📊 MARKET ANALYSIS</button>
+    <button onclick="openModule('status')">🟢 LIVE MARKET STATUS</button>
+  </div>
+
+  <div id="moduleContent" class="module-content">
+    <h3>WELCOME TO YOUR TRADING TERMINAL</h3>
+    <p>Select a module to continue.</p>
+  </div>
+
+  <button id="logoutButton">LOGOUT</button>
 </section>
+
 </main>
 
 
@@ -129,6 +185,28 @@ document.getElementById('authButton').onclick = async () => {
   }
 };
 
+
+window.openModule = function(module) {
+  const content = document.getElementById('moduleContent');
+
+  const modules = {
+    news: ['AI NEWS INTELLIGENCE', 'Live Forex & Gold News'],
+    signals: ['AI SIGNAL ENGINE', 'BUY / SELL Market Signals'],
+    calendar: ['ECONOMIC CALENDAR', 'CPI • NFP • FOMC • PCE'],
+    analysis: ['MARKET ANALYSIS', 'Technical & Smart Money Concepts'],
+    status: ['LIVE MARKET STATUS', 'Market Connection Status']
+  };
+
+  const selected = modules[module];
+
+  if (!selected) return;
+
+  content.innerHTML = `
+    <h3>${selected[0]}</h3>
+    <p>${selected[1]}</p>
+    <p>MODULE INITIALIZING...</p>
+  `;
+};
 document.getElementById('logoutButton').onclick = async () => {
   await supabase.auth.signOut();
   showLogin();
