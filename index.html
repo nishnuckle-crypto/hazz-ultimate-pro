@@ -826,6 +826,12 @@ return;
       <input id="candleHigh" type="number" step="any" placeholder="HIGH">
       <input id="candleLow" type="number" step="any" placeholder="LOW">
       <input id="candleClose" type="number" step="any" placeholder="CLOSE">
+      <h4>PREVIOUS CANDLE OHLC</h4>
+      
+      <input id="prevOpen" type="number" step="any" placeholder="PREVIOUS OPEN">
+      <input id="prevHigh" type="number" step="any" placeholder="PREVIOUS HIGH">
+      <input id="prevLow" type="number" step="any" placeholder="PREVIOUS LOW">
+      <input id="prevClose" type="number" step="any" placeholder="PREVIOUS CLOSE">
 
       <button id="calculateCandle" class="ai-analyze-button">
         ANALYZE MARKET
@@ -849,26 +855,78 @@ return;
       const h = Number(document.getElementById('candleHigh').value);
       const l = Number(document.getElementById('candleLow').value);
       const c = Number(document.getElementById('candleClose').value);
-
+      const po = Number(document.getElementById('prevOpen').value);
+      const ph = Number(document.getElementById('prevHigh').value);
+      const pl = Number(document.getElementById('prevLow').value);
+      const pc = Number(document.getElementById('prevClose').value);
+      
       const result = document.getElementById('technicalResult');
 
-      if (![o, h, l, c].every(Number.isFinite) ||
-          !document.getElementById('candleOpen').value ||
-          !document.getElementById('candleHigh').value ||
-          !document.getElementById('candleLow').value ||
-          !document.getElementById('candleClose').value ||
-          h < Math.max(o, c) ||
-          l > Math.min(o, c) ||
-          h < l) {
-
-        result.innerHTML = '<h4>INVALID PRICE DATA</h4><p>Please check OHLC values.</p>';
-        return;
+      if (
+  ![o, h, l, c, po, ph, pl, pc].every(Number.isFinite) ||
+  ['candleOpen','candleHigh','candleLow','candleClose',
+   'prevOpen','prevHigh','prevLow','prevClose']
+    .some(id => document.getElementById(id).value.trim() === '') ||
+  h < Math.max(o, c) ||
+  l > Math.min(o, c) ||
+  h < l ||
+  ph < Math.max(po, pc) ||
+  pl > Math.min(po, pc) ||
+  ph < pl
+)
       }
 
       const range = h - l;
       const body = Math.abs(c - o);
       const bodyPercent = range > 0 ? body / range * 100 : 0;
-
+      const prevBody = Math.abs(pc - po);
+      const prevBullish = pc > po;
+      const prevBearish = pc < po;
+      
+      const upperWick = h - Math.max(o, c);
+      const lowerWick = Math.min(o, c) - l;
+      
+      const isDoji = range > 0 && bodyPercent <= 10;
+      
+      const bullishEngulfing =
+        prevBearish && c > o && o <= pc && c >= po;
+      
+      const bearishEngulfing =
+        prevBullish && c < o && o >= pc && c <= po;
+      
+      const bullishMarubozu =
+        c > o && range > 0 && bodyPercent >= 90;
+      
+      const bearishMarubozu =
+        c < o && range > 0 && bodyPercent >= 90;
+      
+      const hammer =
+        body > 0 &&
+        lowerWick >= body * 2 &&
+        upperWick <= body * 0.5;
+      
+      const shootingStar =
+        body > 0 &&
+        upperWick >= body * 2 &&
+        lowerWick <= body * 0.5;
+      
+      let candlePattern = 'NO CLEAR PATTERN';
+      
+      if (bullishEngulfing) {
+        candlePattern = 'BULLISH ENGULFING';
+      } else if (bearishEngulfing) {
+        candlePattern = 'BEARISH ENGULFING';
+      } else if (bullishMarubozu) {
+        candlePattern = 'BULLISH MARUBOZU';
+      } else if (bearishMarubozu) {
+        candlePattern = 'BEARISH MARUBOZU';
+      } else if (isDoji) {
+        candlePattern = 'DOJI';
+      } else if (hammer) {
+        candlePattern = 'HAMMER';
+      } else if (shootingStar) {
+        candlePattern = 'SHOOTING STAR';
+}
       const direction = c > o ? 'BULLISH CANDLE'
         : c < o ? 'BEARISH CANDLE'
         : 'NEUTRAL CANDLE';
@@ -878,6 +936,7 @@ return;
         <p>SYMBOL: ${document.getElementById('analysisSymbol').value}</p>
         <p>TIMEFRAME: ${document.getElementById('analysisTimeframe').value}</p>
         <p>CANDLE DIRECTION: ${direction}</p>
+        <p>CANDLE PATTERN: ${candlePattern}</p>
         <p>PRICE RANGE: ${range}</p>
         <p>BODY SIZE: ${body}</p>
         <p>BODY STRENGTH: ${bodyPercent.toFixed(2)}%</p>
