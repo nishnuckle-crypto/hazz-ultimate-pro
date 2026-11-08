@@ -49,12 +49,59 @@ export default async function handler(req, res) {
 
     const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
 
-    const articles = items.map(item => ({
-      title: getTag(item, "title"),
-      source: getTag(item, "source") || "Google News",
-      url: getTag(item, "link"),
-      published_at: getTag(item, "pubDate")
-    })).filter(article => article.title && article.url);
+    function analyzeSentiment(title) {
+  const text = title.toLowerCase();
+
+  const bullishWords = [
+    "rally", "surge", "gain", "rise", "rising",
+    "strong", "growth", "rebound", "optimism",
+    "rate cut", "easing", "dovish"
+  ];
+
+  const bearishWords = [
+    "crash", "fall", "drop", "decline", "weak",
+    "selloff", "recession", "crisis", "hawkish",
+    "rate hike", "surge in inflation"
+  ];
+
+  const bullish = bullishWords.filter(word => text.includes(word)).length;
+  const bearish = bearishWords.filter(word => text.includes(word)).length;
+
+  if (bullish > bearish) return "BULLISH";
+  if (bearish > bullish) return "BEARISH";
+  return "NEUTRAL";
+}
+
+function analyzeImpact(title) {
+  const text = title.toLowerCase();
+
+  if (/fomc|interest rate decision|fed decision|nonfarm payrolls|nfp|cpi|inflation report/.test(text)) {
+    return "CRITICAL";
+  }
+
+  if (/federal reserve|inflation|jobs report|unemployment|pce|gdp|central bank/.test(text)) {
+    return "HIGH";
+  }
+
+  if (/gold|xauusd|dollar|forex|treasury yield/.test(text)) {
+    return "MEDIUM";
+  }
+
+  return "LOW";
+}
+
+const articles = items.map(item => {
+  const title = getTag(item, "title");
+
+  return {
+    title,
+    source: getTag(item, "source") || "Google News",
+    url: getTag(item, "link"),
+    published_at: getTag(item, "pubDate"),
+    sentiment: analyzeSentiment(title),
+    impact: analyzeImpact(title)
+  };
+}).filter(article => article.title && article.url);
 
     res.setHeader(
       "Cache-Control",
