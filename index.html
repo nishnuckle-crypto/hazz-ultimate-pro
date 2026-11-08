@@ -320,6 +320,7 @@ window.openModule = function(module) {
 
   const selected = modules[module];
   
+
 if (module === 'news') {
   content.innerHTML = `
     <h3>AI NEWS INTELLIGENCE</h3>
@@ -331,15 +332,24 @@ if (module === 'news') {
     const status = document.getElementById('newsStatus');
     const feed = document.getElementById('liveNewsFeed');
 
+    if (!status || !feed) return;
+
     try {
       status.textContent = 'Updating live news...';
 
       const response = await fetch('/api/news');
+
+      if (!response.ok) {
+        throw new Error('News HTTP ' + response.status);
+      }
+
       const data = await response.json();
 
       if (!data.success) {
         throw new Error(data.error || 'News unavailable');
       }
+
+      const articles = (data.articles || []).slice(0, 20);
 
       const escapeHTML = value =>
         String(value || '').replace(/[&<>"']/g, char => ({
@@ -353,108 +363,149 @@ if (module === 'news') {
       status.textContent =
         `${data.total} ARTICLES • ${data.source} • UPDATED ${new Date().toLocaleTimeString()}`;
 
-      feed.innerHTML = data.articles.slice(0, 20).map(article => `
+      feed.innerHTML = articles.map((article, index) => `
         <div class="news-card">
           <h4>${escapeHTML(article.title)}</h4>
+
           <p>${escapeHTML(article.source)}</p>
+
           <span>${escapeHTML(article.published_at)}</span>
 
-<div class="news-tags">
-  <span class="sentiment-tag">
-    ${escapeHTML(article.sentiment)}
-  </span>
+          <div class="news-tags">
+            <span class="sentiment-tag">
+              ${escapeHTML(article.sentiment)}
+            </span>
 
-  <span class="impact-tag">
-    IMPACT: ${escapeHTML(article.impact)}
-  </span>
-</div>
-          
-<p>
-  <a href="${escapeHTML(article.url)}"
-     target="_blank"
-     rel="noopener noreferrer">
-    READ FULL NEWS ↗
-  </a>
-</p>
+            <span class="impact-tag">
+              IMPACT: ${escapeHTML(article.impact)}
+            </span>
+          </div>
 
-<button
-  type="button"
-  class="ai-analyze-button"
-  data-title="${escapeHTML(article.title)}"
-  data-source="${escapeHTML(article.source)}"
-  data-published="${escapeHTML(article.published_at)}">
-  ✨ ANALYZE WITH AI
-</button>
+          <p>
+            <a href="${escapeHTML(article.url)}"
+               target="_blank"
+               rel="noopener noreferrer">
+              READ FULL NEWS ↗
+            </a>
+          </p>
 
-<div class="ai-analysis-result"></div>
+          <button
+            type="button"
+            class="ai-analyze-button"
+            data-index="${index}">
+            ✨ ANALYZE WITH AI
+          </button>
 
+          <div class="ai-analysis-result"></div>
         </div>
       `).join('');
 
-feed.querySelectorAll('.ai-analyze-button').forEach(button => {
-  button.addEventListener('click', async () => {
-    const card = button.closest('.news-card');
-    const resultBox = card.querySelector('.ai-analysis-result');
+      feed.querySelectorAll('.ai-analyze-button').forEach(button => {
+        button.addEventListener('click', async () => {
 
-    button.disabled = true;
-    button.textContent = 'AI ANALYZING...';
+          const article = articles[Number(button.dataset.index)];
+          const card = button.closest('.news-card');
+          const resultBox = card.querySelector('.ai-analysis-result');
 
-    resultBox.innerHTML = '<p>AI is analyzing this news...</p>';
+          if (!article || !resultBox) return;
 
-    try {
-      const response = await fetch('/api/ai-news', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          title: button.dataset.title,
-          source: button.dataset.source,
-          published_at: button.dataset.published
-        })
+          button.disabled = true;
+          button.textContent = 'AI ANALYZING...';
+
+          resultBox.innerHTML =
+            '<p>AI is analyzing this news. Please wait...</p>';
+
+          try {
+            const aiResponse = await fetch('/api/ai-news', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                title: article.title,
+                source: article.source,
+                published_at: article.published_at
+              })
+            });
+
+            const aiData = await aiResponse.json();
+
+            if (!aiResponse.ok || !aiData.success) {
+              throw new Error(
+                aiData.error || 'AI analysis failed'
+              );
+            }
+
+            const a = aiData.analysis || {};
+
+            const safe = value =>
+              escapeHTML(value || '--');
+
+            resultBox.innerHTML = `
+              <div class="ai-analysis-panel">
+
+                <h4>✨ AI ANALYSIS RESULT</h4>
+
+                <p>
+                  <b>SUMMARY</b><br>
+                  ${safe(a.summary)}
+                </p>
+
+                <p>
+                  <b>MARKET SENTIMENT</b><br>
+                  ${safe(a.sentiment)}
+                </p>
+
+                <p>
+                  <b>GOLD IMPACT (XAUUSD)</b><br>
+                  ${safe(a.gold_impact)}
+                </p>
+
+                <p>
+                  <b>USD IMPACT</b><br>
+                  ${safe(a.usd_impact)}
+                </p>
+
+                <p>
+                  <b>IMPACT LEVEL</b><br>
+                  ${safe(a.impact_level)}
+                </p>
+
+                <p>
+                  <b>MARKET ANALYSIS</b><br>
+                  ${safe(a.market_analysis)}
+                </p>
+
+                <p>
+                  <b>RISK NOTE</b><br>
+                  ${safe(a.risk_note)}
+                </p>
+
+                <p>
+                  <small>
+                    Preliminary AI analysis based on the news headline.
+                    Not a guaranteed trading signal.
+                  </small>
+                </p>
+
+              </div>
+            `;
+
+          } catch (error) {
+            resultBox.textContent =
+              'AI ERROR: ' + error.message;
+
+          } finally {
+            button.disabled = false;
+            button.textContent = '✨ ANALYZE WITH AI';
+          }
+
+        });
       });
 
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'AI analysis failed');
-      }
-
-      const a = data.analysis;
-
-      const safe = value =>
-        String(value || '--').replace(/[&<>"']/g, char => ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;'
-        })[char]);
-
-      resultBox.innerHTML = `
-        <div class="ai-analysis-panel">
-          <h4>✨ AI ANALYSIS RESULT</h4>
-          <p><b>SUMMARY:</b> ${safe(a.summary)}</p>
-          <p><b>SENTIMENT:</b> ${safe(a.sentiment)}</p>
-          <p><b>GOLD IMPACT:</b> ${safe(a.gold_impact)}</p>
-          <p><b>USD IMPACT:</b> ${safe(a.usd_impact)}</p>
-          <p><b>IMPACT LEVEL:</b> ${safe(a.impact_level)}</p>
-          <p><b>MARKET ANALYSIS:</b> ${safe(a.market_analysis)}</p>
-          <p><b>RISK NOTE:</b> ${safe(a.risk_note)}</p>
-        </div>
-      `;
-
     } catch (error) {
-      resultBox.textContent = 'AI ERROR: ' + error.message;
-    } finally {
-      button.disabled = false;
-      button.textContent = '✨ ANALYZE WITH AI';
-    }
-  });
-});
-
-    } catch (error) {
-      status.textContent = 'LIVE NEWS ERROR: ' + error.message;
+      status.textContent =
+        'LIVE NEWS ERROR: ' + error.message;
     }
   }
 
@@ -463,10 +514,13 @@ feed.querySelectorAll('.ai-analyze-button').forEach(button => {
   }
 
   loadNews();
-  window.newsRefreshTimer = setInterval(loadNews, 300000);
+
+  window.newsRefreshTimer =
+    setInterval(loadNews, 300000);
 
   return;
 }
+
 
 if (module === 'calendar') {
   content.innerHTML = `
