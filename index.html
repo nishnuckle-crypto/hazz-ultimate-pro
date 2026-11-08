@@ -181,6 +181,16 @@ button{width:100%;padding:14px;margin-top:12px;background:#d9b56d;border:0;borde
 .ai-analysis-panel h4 {
   color: #e5bd58;
   margin-top: 0;
+#moduleContent select {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  background: #080808;
+  color: #d9b56d;
+  border: 1px solid #806735;
+  border-radius: 7px;
+  font-size: 12px;
+}
 }
 </style>
 </head>
@@ -784,7 +794,103 @@ return;
 }
 
 
-  if (!selected) return;
+  if (module === 'analysis') {
+  content.innerHTML = `
+    <h3>📊 MARKET ANALYSIS</h3>
+    <p>TECHNICAL & SMART MONEY CONCEPTS</p>
+
+    <div class="news-card">
+      <h4>MARKET DATA INPUT</h4>
+
+      <label>SYMBOL</label>
+      <select id="analysisSymbol">
+        <option>XAUUSD</option>
+        <option>EURUSD</option>
+        <option>GBPUSD</option>
+        <option>USDJPY</option>
+        <option>GBPJPY</option>
+      </select>
+
+      <label>TIMEFRAME</label>
+      <select id="analysisTimeframe">
+        <option>M15</option>
+        <option>M30</option>
+        <option>H1</option>
+        <option>H4</option>
+        <option>D1</option>
+      </select>
+
+      <h4>OHLC PRICE DATA</h4>
+
+      <input id="candleOpen" type="number" step="any" placeholder="OPEN">
+      <input id="candleHigh" type="number" step="any" placeholder="HIGH">
+      <input id="candleLow" type="number" step="any" placeholder="LOW">
+      <input id="candleClose" type="number" step="any" placeholder="CLOSE">
+
+      <button id="calculateCandle" class="ai-analyze-button">
+        ANALYZE MARKET
+      </button>
+    </div>
+
+    <div id="technicalResult" class="ai-analysis-panel">
+      <h4>TECHNICAL ANALYSIS</h4>
+      <p>Enter OHLC data to begin analysis.</p>
+    </div>
+
+    <p class="muted">
+      MANUAL DATA MODE • LIVE MARKET FEED NOT CONNECTED
+    </p>
+  `;
+
+  document.getElementById('calculateCandle')
+    .addEventListener('click', () => {
+
+      const o = Number(document.getElementById('candleOpen').value);
+      const h = Number(document.getElementById('candleHigh').value);
+      const l = Number(document.getElementById('candleLow').value);
+      const c = Number(document.getElementById('candleClose').value);
+
+      const result = document.getElementById('technicalResult');
+
+      if (![o, h, l, c].every(Number.isFinite) ||
+          !document.getElementById('candleOpen').value ||
+          !document.getElementById('candleHigh').value ||
+          !document.getElementById('candleLow').value ||
+          !document.getElementById('candleClose').value ||
+          h < Math.max(o, c) ||
+          l > Math.min(o, c) ||
+          h < l) {
+
+        result.innerHTML = '<h4>INVALID PRICE DATA</h4><p>Please check OHLC values.</p>';
+        return;
+      }
+
+      const range = h - l;
+      const body = Math.abs(c - o);
+      const bodyPercent = range > 0 ? body / range * 100 : 0;
+
+      const direction = c > o ? 'BULLISH CANDLE'
+        : c < o ? 'BEARISH CANDLE'
+        : 'NEUTRAL CANDLE';
+
+      result.innerHTML = `
+        <h4>TECHNICAL ANALYSIS RESULT</h4>
+        <p>SYMBOL: ${document.getElementById('analysisSymbol').value}</p>
+        <p>TIMEFRAME: ${document.getElementById('analysisTimeframe').value}</p>
+        <p>CANDLE DIRECTION: ${direction}</p>
+        <p>PRICE RANGE: ${range}</p>
+        <p>BODY SIZE: ${body}</p>
+        <p>BODY STRENGTH: ${bodyPercent.toFixed(2)}%</p>
+        <p>OPEN: ${o}</p>
+        <p>HIGH: ${h}</p>
+        <p>LOW: ${l}</p>
+        <p>CLOSE: ${c}</p>
+        <p>NOTE: Single-candle analysis only. No BUY/SELL signal generated.</p>
+      `;
+    });
+
+  return;
+}
 
   content.innerHTML = `
     <h3>${selected[0]}</h3>
