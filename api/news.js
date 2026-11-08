@@ -24,7 +24,7 @@ function getTag(xml, tag) {
 export default async function handler(req, res) {
   try {
     const query =
-      '(gold OR XAUUSD OR forex OR "Federal Reserve" OR CPI OR NFP OR FOMC OR PCE OR GDP OR inflation)';
+  '("XAUUSD" OR "gold price" OR bullion OR forex OR "US dollar" OR "Federal Reserve" OR FOMC OR "US inflation" OR "Nonfarm Payrolls" OR "interest rates")';
 
     const url = new URL(
       "https://news.google.com/rss/search"
