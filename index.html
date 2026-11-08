@@ -47,13 +47,14 @@ button{width:100%;padding:14px;margin-top:12px;background:#d9b56d;border:0;borde
 </section>
 </main>
 
+
 <script type="module">
 import { createClient } from
 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 const supabase = createClient(
-'https://onxbtoovnxduckkwydhm.supabase.co',
-'sb_publishable_vvK94NzTotPXrH9DOXqTQA_O6P_EiJd'
+  'https://onxbtoovnxduckkwydhm.supabase.co',
+  'sb_publishable_vvK94NzTotPXrH9DOXqTQA_O6P_EiJd'
 );
 
 let isRegister = false;
@@ -65,15 +66,30 @@ const authPanel = document.getElementById('authPanel');
 const dashboard = document.getElementById('dashboard');
 
 function showDashboard(user) {
-authPanel.style.display = 'none';
-dashboard.style.display = 'block';
-document.getElementById('userEmail').textContent = user.email;
+  authPanel.style.display = 'none';
+  dashboard.style.display = 'block';
+  document.getElementById('userEmail').textContent = user.email;
 }
 
 function showLogin() {
-dashboard.style.display = 'none';
-authPanel.style.display = 'block';
+  dashboard.style.display = 'none';
+  authPanel.style.display = 'block';
 }
+
+document.getElementById('switchButton').onclick = () => {
+  isRegister = !isRegister;
+
+  document.getElementById('formTitle').textContent =
+    isRegister ? 'CREATE ACCOUNT' : 'WELCOME BACK';
+
+  document.getElementById('authButton').textContent =
+    isRegister ? 'REGISTER' : 'LOGIN';
+
+  document.getElementById('switchButton').textContent =
+    isRegister ? 'BACK TO LOGIN' : 'CREATE ACCOUNT';
+
+  message.textContent = '';
+};
 
 document.getElementById('authButton').onclick = async () => {
   const e = email.value.trim();
@@ -84,7 +100,7 @@ document.getElementById('authButton').onclick = async () => {
     return;
   }
 
-  message.textContent = 'Connecting to Supabase...';
+  message.textContent = 'Connecting...';
 
   try {
     const result = isRegister
@@ -92,14 +108,14 @@ document.getElementById('authButton').onclick = async () => {
       : await supabase.auth.signInWithPassword({ email: e, password: p });
 
     if (result.error) {
-  message.textContent = JSON.stringify({
-    name: result.error.name,
-    message: result.error.message,
-    status: result.error.status,
-    code: result.error.code
-  });
-  return;
-}
+      message.textContent = JSON.stringify({
+        name: result.error.name,
+        message: result.error.message,
+        status: result.error.status,
+        code: result.error.code
+      });
+      return;
+    }
 
     if (isRegister && !result.data.session) {
       message.textContent = 'Check your email to confirm registration.';
@@ -113,52 +129,17 @@ document.getElementById('authButton').onclick = async () => {
   }
 };
 
-document.getElementById('authButton').onclick = async () => {
-const e = email.value.trim();
-const p = password.value;
-
-if (!e || !p) {
-message.textContent = 'Enter email and password.';
-return;
-}
-
-message.textContent = 'Please wait...';
-
-const result = isRegister
-? await supabase.auth.signUp({
-email:e,password:p,
-options:{emailRedirectTo:location.origin}
-})
-: await supabase.auth.signInWithPassword({
-email:e,password:p
-});
-
-if (result.error) {
-message.textContent = result.error.message;
-return;
-}
-
-if (isRegister && !result.data.session) {
-message.textContent = 'Check your email to confirm your account.';
-return;
-}
-
-if (result.data.user) showDashboard(result.data.user);
-};
-
 document.getElementById('logoutButton').onclick = async () => {
-await supabase.auth.signOut();
-showLogin();
+  await supabase.auth.signOut();
+  showLogin();
 };
 
-const {data:{session}} = await supabase.auth.getSession();
+const { data: { session } } = await supabase.auth.getSession();
+
 if (session) showDashboard(session.user);
 
-supabase.auth.onAuthStateChange((_event,session) => {
-if (session) showDashboard(session.user);
-else showLogin();
+supabase.auth.onAuthStateChange((_event, session) => {
+  if (session) showDashboard(session.user);
+  else showLogin();
 });
 </script>
-</body>
-</html>
-
