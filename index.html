@@ -508,68 +508,7 @@ feed.querySelectorAll('.ai-analyze-button').forEach(button => {
 });
 
 
-            const aiData = await aiResponse.json();
-
-            if (!aiResponse.ok || !aiData.success) {
-              throw new Error(
-                aiData.error || 'AI analysis failed'
-              );
-            }
-
-            const a = aiData.analysis || {};
-
-            const safe = value =>
-              escapeHTML(value || '--');
-
-            resultBox.innerHTML = `
-              <div class="ai-analysis-panel">
-
-                <h4>✨ AI ANALYSIS RESULT</h4>
-
-                <p>
-                  <b>SUMMARY</b><br>
-                  ${safe(a.summary)}
-                </p>
-
-                <p>
-                  <b>MARKET SENTIMENT</b><br>
-                  ${safe(a.sentiment)}
-                </p>
-
-                <p>
-                  <b>GOLD IMPACT (XAUUSD)</b><br>
-                  ${safe(a.gold_impact)}
-                </p>
-
-                <p>
-                  <b>USD IMPACT</b><br>
-                  ${safe(a.usd_impact)}
-                </p>
-
-                <p>
-                  <b>IMPACT LEVEL</b><br>
-                  ${safe(a.impact_level)}
-                </p>
-
-                <p>
-                  <b>MARKET ANALYSIS</b><br>
-                  ${safe(a.market_analysis)}
-                </p>
-
-                <p>
-                  <b>RISK NOTE</b><br>
-                  ${safe(a.risk_note)}
-                </p>
-
-                <p>
-                  <small>
-                    Preliminary AI analysis based on the news headline.
-                    Not a guaranteed trading signal.
-                  </small>
-                </p>
-
-              </div>
-            `;
+            
 
           } catch (error) {
             resultBox.textContent =
