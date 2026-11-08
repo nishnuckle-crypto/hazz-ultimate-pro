@@ -61,6 +61,31 @@ button{width:100%;padding:14px;margin-top:12px;background:#d9b56d;border:0;borde
   color: #999;
   font-size: 12px;
 }
+
+.news-card {
+  background: #171717;
+  border: 1px solid #594a2c;
+  border-radius: 9px;
+  padding: 15px;
+  margin: 12px 0;
+}
+
+.news-card h4 {
+  color: #d9b56d;
+  font-size: 13px;
+  margin: 0 0 10px;
+}
+
+.news-card p {
+  color: #eee;
+  font-size: 12px;
+}
+
+.news-card span {
+  color: #999;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
 </style>
 </head>
 <body>
@@ -198,6 +223,38 @@ window.openModule = function(module) {
   };
 
   const selected = modules[module];
+  
+if (module === 'news') {
+  content.innerHTML = `
+    <h3>AI NEWS INTELLIGENCE</h3>
+
+    <div class="news-card">
+      <h4>GLOBAL MARKET NEWS</h4>
+      <p>Forex & Gold Market Updates</p>
+      <span>LIVE NEWS FEED</span>
+    </div>
+
+    <div class="news-card">
+      <h4>ECONOMIC EVENTS</h4>
+      <p>FOMC • CPI • NFP • PCE • GDP</p>
+      <span>ECONOMIC MONITOR</span>
+    </div>
+
+    <div class="news-card">
+      <h4>AI MARKET SENTIMENT</h4>
+      <p>Bullish / Bearish / Neutral</p>
+      <span>AI ANALYSIS</span>
+    </div>
+
+    <div class="news-card">
+      <h4>MARKET IMPACT</h4>
+      <p>LOW • MEDIUM • HIGH • CRITICAL</p>
+      <span>IMPACT MONITOR</span>
+    </div>
+  `;
+  return;
+}
+
 
   if (!selected) return;
 
