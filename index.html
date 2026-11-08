@@ -112,7 +112,31 @@ button{width:100%;padding:14px;margin-top:12px;background:#d9b56d;border:0;borde
 .impact-tag {
   color: #fff;
   background: #252525;
-}</style>
+}
+
+.calendar-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.calendar-filters select {
+  width: 100%;
+  background: #171717;
+  color: #d9b56d;
+  border: 1px solid #806735;
+  border-radius: 7px;
+  padding: 12px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  outline: none;
+}
+
+.calendar-filters select:focus {
+  border-color: #d9b56d;
+}
+</style>
 </head>
 <body>
 <header>
@@ -324,7 +348,24 @@ if (module === 'calendar') {
   content.innerHTML = `
     <h3>ECONOMIC CALENDAR</h3>
     <p id="calendarStatus">Connecting to economic calendar...</p>
-    <div id="calendarFeed"></div>
+    <div class="calendar-filters">
+  <select id="currencyFilter">
+    <option value="ALL">ALL CURRENCIES</option>
+    <option value="USD">USD</option>
+    <option value="EUR">EUR</option>
+    <option value="GBP">GBP</option>
+    <option value="JPY">JPY</option>
+  </select>
+
+  <select id="impactFilter">
+    <option value="ALL">ALL IMPACT</option>
+    <option value="high">HIGH IMPACT</option>
+    <option value="medium">MEDIUM IMPACT</option>
+    <option value="low">LOW IMPACT</option>
+  </select>
+</div>
+
+<div id="calendarFeed"></div>
   `;
 
   async function loadCalendar() {
@@ -357,15 +398,26 @@ if (module === 'calendar') {
 
       const now = Date.now();
 
-      const events = (data.events || [])
-        .filter(event =>
-          event.time &&
-          new Date(event.time).getTime() >= now
-        )
-        .sort((a, b) =>
-          new Date(a.time) - new Date(b.time)
-        )
-        .slice(0, 50);
+      
+const currency = document.getElementById('currencyFilter').value;
+const impact = document.getElementById('impactFilter').value;
+
+const events = (data.events || [])
+  .filter(event =>
+    event.time &&
+    new Date(event.time).getTime() >= now
+  )
+  .filter(event =>
+    currency === 'ALL' || event.currency === currency
+  )
+  .filter(event =>
+    impact === 'ALL' || event.impact === impact
+  )
+  .sort((a, b) =>
+    new Date(a.time) - new Date(b.time)
+  )
+  .slice(0, 50);
+
 
       status.textContent =
         `${events.length} UPCOMING EVENTS • UPDATED ${new Date().toLocaleTimeString()}`;
@@ -418,11 +470,20 @@ if (module === 'calendar') {
     clearInterval(window.calendarRefreshTimer);
   }
 
-  loadCalendar();
-  window.calendarRefreshTimer =
-    setInterval(loadCalendar, 900000);
+  
+document.getElementById('currencyFilter')
+  .addEventListener('change', loadCalendar);
 
-  return;
+document.getElementById('impactFilter')
+  .addEventListener('change', loadCalendar);
+
+loadCalendar();
+
+window.calendarRefreshTimer =
+  setInterval(loadCalendar, 900000);
+
+return;
+
 }
 
 
