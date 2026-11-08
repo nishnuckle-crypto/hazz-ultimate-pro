@@ -10,10 +10,15 @@ function decodeXML(value = "") {
 
 function getTag(xml, tag) {
   const match = xml.match(
-    new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)<\\\\/${tag}>`, "i")
+    new RegExp(
+      `<${tag}\\b[^>]*>([\\s\\S]*?)<\\/${tag}>`,
+      "i"
+    )
   );
 
-  return match ? decodeXML(match[1].trim()) : "";
+  return match
+    ? decodeXML(match[1].trim())
+    : "";
 }
 
 export default async function handler(req, res) {
