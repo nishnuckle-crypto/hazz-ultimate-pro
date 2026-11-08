@@ -422,7 +422,7 @@ let analysis = 'Insufficient information to determine market direction.';
 
 // EVENT DETECTION
 const isInflation = /cpi|pce|inflation|consumer price|prices/.test(title);
-const isJobs = /nfp|nonfarm|payroll|employment|unemployment|jobless|wage/.test(title);
+const isJobs = /nfp|nonfarm|payroll|employment|unemployment|jobless|wage|labor market|labour market|job creation|jobs report|initial jobless claims|continuing claims|average hourly earnings|private sector jobs|adp employment|employment growth/.test(title);
 const isFed = /fomc|federal reserve|fed policy|interest rate|rate cut|rate hike/.test(title);
 const isYield = /treasury yield|bond yield|10-year yield|10 year yield/.test(title);
 const isGDP = /gdp|recession|economic growth/.test(title);
@@ -431,8 +431,8 @@ const isGDP = /gdp|recession|economic growth/.test(title);
 const hotter = /hotter|higher|rises|rising|accelerates|accelerating|above forecast|beats expectations/.test(title);
 const cooler = /cooler|lower|falls|falling|slows|slowing|below forecast|misses expectations|simmer down|cools|cooling|eases|easing|softens|softening|disinflation|moderates|moderating|price pressures decline|inflation declines/.test(title);
 
-const strong = /stronger|strong growth|surges|jumps|robust|beats expectations/.test(title);
-const weak = /weaker|weak growth|slumps|declines|contracts|misses expectations/.test(title);
+const strong = /stronger|strong growth|surges|jumps|robust|beats expectations|above expectations|higher than expected|job growth accelerates|payrolls rise|employment rises|wages accelerate|unemployment falls|unemployment declines/.test(title);
+const weak = /weaker|weak growth|slumps|declines|contracts|misses expectations|below expectations|lower than expected|job growth slows|payrolls fall|employment falls|wages slow|unemployment rises|unemployment increases|job losses/.test(title);
 
 const hawkish = /hawkish|rate hike|higher for longer|tightening/.test(title);
 const dovish = /dovish|rate cut|easing|rate reduction/.test(title);
