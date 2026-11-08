@@ -92,10 +92,14 @@ document.getElementById('authButton').onclick = async () => {
       : await supabase.auth.signInWithPassword({ email: e, password: p });
 
     if (result.error) {
-      message.textContent =
-        result.error.name + ': ' + result.error.message;
-      return;
-    }
+  message.textContent = JSON.stringify({
+    name: result.error.name,
+    message: result.error.message,
+    status: result.error.status,
+    code: result.error.code
+  });
+  return;
+}
 
     if (isRegister && !result.data.session) {
       message.textContent = 'Check your email to confirm registration.';
