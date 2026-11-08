@@ -320,6 +320,111 @@ if (module === 'news') {
   return;
 }
 
+if (module === 'calendar') {
+  content.innerHTML = `
+    <h3>ECONOMIC CALENDAR</h3>
+    <p id="calendarStatus">Connecting to economic calendar...</p>
+    <div id="calendarFeed"></div>
+  `;
+
+  async function loadCalendar() {
+    const status = document.getElementById('calendarStatus');
+    const feed = document.getElementById('calendarFeed');
+
+    try {
+      status.textContent = 'Updating economic events...';
+
+      const response = await fetch('/api/calendar');
+
+      if (!response.ok) {
+        throw new Error('HTTP ' + response.status);
+      }
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Calendar unavailable');
+      }
+
+      const escapeHTML = value =>
+        String(value || '').replace(/[&<>"']/g, char => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        })[char]);
+
+      const now = Date.now();
+
+      const events = (data.events || [])
+        .filter(event =>
+          event.time &&
+          new Date(event.time).getTime() >= now
+        )
+        .sort((a, b) =>
+          new Date(a.time) - new Date(b.time)
+        )
+        .slice(0, 50);
+
+      status.textContent =
+        `${events.length} UPCOMING EVENTS • UPDATED ${new Date().toLocaleTimeString()}`;
+
+      if (!events.length) {
+        feed.innerHTML = '<p>No upcoming events found.</p>';
+        return;
+      }
+
+      feed.innerHTML = events.map(event => {
+        const eventTime = new Date(event.time)
+          .toLocaleString('en-MY', {
+            timeZone: 'Asia/Kuala_Lumpur',
+            dateStyle: 'medium',
+            timeStyle: 'short'
+          });
+
+        return `
+          <div class="news-card">
+            <h4>${escapeHTML(event.title)}</h4>
+
+            <p>
+              ${escapeHTML(event.currency)} •
+              ${escapeHTML(event.impact).toUpperCase()}
+            </p>
+
+            <span>${escapeHTML(eventTime)} MYT</span>
+
+            <div class="news-tags">
+              <span class="impact-tag">
+                ${escapeHTML(event.status || 'SCHEDULED').toUpperCase()}
+              </span>
+            </div>
+
+            <p>
+              FORECAST: ${escapeHTML(event.forecast || '--')}<br>
+              PREVIOUS: ${escapeHTML(event.previous || '--')}<br>
+              ACTUAL: ${escapeHTML(event.actual || '--')}
+            </p>
+          </div>
+        `;
+      }).join('');
+
+    } catch (error) {
+      status.textContent = 'CALENDAR ERROR: ' + error.message;
+    }
+  }
+
+  if (window.calendarRefreshTimer) {
+    clearInterval(window.calendarRefreshTimer);
+  }
+
+  loadCalendar();
+  window.calendarRefreshTimer =
+    setInterval(loadCalendar, 900000);
+
+  return;
+}
+
 
   if (!selected) return;
 
