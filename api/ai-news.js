@@ -45,7 +45,9 @@ Focus on:
 - Federal Reserve and interest rates
 - Inflation and employment data
 
-Return valid JSON only with these fields:
+Return valid JSON only. Your response must be a JSON object.
+Use JSON format for all output.
+Return these fields:
 {
   "summary": "Short news summary",
   "sentiment": "BULLISH, BEARISH, or NEUTRAL",
