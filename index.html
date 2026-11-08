@@ -506,22 +506,6 @@ feed.querySelectorAll('.ai-analyze-button').forEach(button => {
 
   });
 });
-
-
-            
-
-          } catch (error) {
-            resultBox.textContent =
-              'AI ERROR: ' + error.message;
-
-          } finally {
-            button.disabled = false;
-            button.textContent = '📊 FREE MARKET ANALYSIS';
-          }
-
-        });
-      });
-
     } catch (error) {
       status.textContent =
         'LIVE NEWS ERROR: ' + error.message;
