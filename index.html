@@ -516,7 +516,7 @@ if (sentiment === 'NEUTRAL' && isGold) {
 if (sentiment === 'NEUTRAL' && isUSD) {
   if (/strengthens|strengthening|surges|gains|rallies|rally|rises|higher/.test(title)) {
     bearishGold('A stronger US dollar may put pressure on gold.');
-  } else if (/weakens|weakening|slumps|falls|declines|drops|lower/.test(title)) {
+ } else if (/weakens|weakening|slumps|falls|declines|drops|lower|dollar under pressure|pressure on (the )?(us )?dollar|us dollar.*pressure|dollar faces .*pressure|pressures? (the )?(us )?dollar/.test(title)) {
     bullishGold('A weaker US dollar may provide support for gold.');
   }
 }
