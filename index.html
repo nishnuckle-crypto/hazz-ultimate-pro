@@ -832,9 +832,15 @@ return;
       <input id="prevHigh" type="number" step="any" placeholder="PREVIOUS HIGH">
       <input id="prevLow" type="number" step="any" placeholder="PREVIOUS LOW">
       <input id="prevClose" type="number" step="any" placeholder="PREVIOUS CLOSE">
-
+      
+      <h4>THIRD CANDLE OHLC</h4>
+      <input id="thirdOpen" type="number" step="any" placeholder="THIRD OPEN">
+      <input id="thirdHigh" type="number" step="any" placeholder="THIRD HIGH">
+      <input id="thirdLow" type="number" step="any" placeholder="THIRD LOW">
+      <input id="thirdClose" type="number" step="any" placeholder="THIRD CLOSE">
+      
       <button id="calculateCandle" class="ai-analyze-button">
-        ANALYZE MARKET
+      ANALYZE MARKET
       </button>
     </div>
 
@@ -859,20 +865,28 @@ return;
       const ph = Number(document.getElementById('prevHigh').value);
       const pl = Number(document.getElementById('prevLow').value);
       const pc = Number(document.getElementById('prevClose').value);
+      const to = Number(document.getElementById('thirdOpen').value);
+      const th = Number(document.getElementById('thirdHigh').value);
+      const tl = Number(document.getElementById('thirdLow').value);
+      const tc = Number(document.getElementById('thirdClose').value);
       
       const result = document.getElementById('technicalResult');
 
       if (
-  ![o, h, l, c, po, ph, pl, pc].every(Number.isFinite) ||
+  ![o, h, l, c, po, ph, pl, pc, to, th, tl, tc].every(Number.isFinite)
   ['candleOpen','candleHigh','candleLow','candleClose',
-   'prevOpen','prevHigh','prevLow','prevClose']
+   'prevOpen','prevHigh','prevLow','prevClose',
+   'thirdOpen','thirdHigh','thirdLow','thirdClose']
     .some(id => document.getElementById(id).value.trim() === '') ||
   h < Math.max(o, c) ||
   l > Math.min(o, c) ||
   h < l ||
   ph < Math.max(po, pc) ||
   pl > Math.min(po, pc) ||
-  ph < pl
+  ph < pl ||
+  th < Math.max(to, tc) ||
+  tl > Math.min(to, tc) ||
+  th < tl    
 ) {
   result.innerHTML =
     '<h4>INVALID PRICE DATA</h4><p>Please check OHLC values.</p>';
@@ -912,10 +926,58 @@ return;
         body > 0 &&
         upperWick >= body * 2 &&
         lowerWick <= body * 0.5;
+      // THREE-CANDLE PATTERN DETECTION
+      
+      const prevRange = ph - pl;
+      const prevBodyPercent =
+        prevRange > 0 ? prevBody / prevRange * 100 : 0;
+      
+      const thirdBody = Math.abs(tc - to);
+      const thirdRange = th - tl;
+      const thirdBodyPercent =
+        thirdRange > 0 ? thirdBody / thirdRange * 100 : 0;
+      
+      const morningStar =
+        prevBearish &&
+        prevBodyPercent >= 50 &&
+        bodyPercent <= 30 &&
+        tc > to &&
+        thirdBodyPercent >= 50 &&
+        tc > (po + pc) / 2;
+      
+      const eveningStar =
+        prevBullish &&
+        prevBodyPercent >= 50 &&
+        bodyPercent <= 30 &&
+        tc < to &&
+        thirdBodyPercent >= 50 &&
+        tc < (po + pc) / 2;
+      
+      const threeWhiteSoldiers =
+        prevBullish && c > o && tc > to &&
+        pc > po && c > pc && tc > c &&
+        prevBodyPercent >= 50 &&
+        bodyPercent >= 50 &&
+        thirdBodyPercent >= 50;
+      
+      const threeBlackCrows =
+        prevBearish && c < o && tc < to &&
+        pc < po && c < pc && tc < c &&
+        prevBodyPercent >= 50 &&
+        bodyPercent >= 50 &&
+        thirdBodyPercent >= 50;
       
       let candlePattern = 'NO CLEAR PATTERN';
       
-      if (bullishEngulfing) {
+      if (morningStar) {
+        candlePattern = 'MORNING STAR';
+      } else if (eveningStar) {
+        candlePattern = 'EVENING STAR';
+      } else if (threeWhiteSoldiers) {
+        candlePattern = 'THREE WHITE SOLDIERS';
+      } else if (threeBlackCrows) {
+        candlePattern = 'THREE BLACK CROWS';
+      } else if (bullishEngulfing) {
         candlePattern = 'BULLISH ENGULFING';
       } else if (bearishEngulfing) {
         candlePattern = 'BEARISH ENGULFING';
@@ -947,7 +1009,7 @@ return;
         <p>HIGH: ${h}</p>
         <p>LOW: ${l}</p>
         <p>CLOSE: ${c}</p>
-        <p>NOTE: Single-candle analysis only. No BUY/SELL signal generated.</p>
+        <p>NOTE: Up to three-candle pattern analysis. No BUY/SELL signal generated.</p>
       `;
     });
 
