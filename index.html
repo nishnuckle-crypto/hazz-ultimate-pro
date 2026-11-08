@@ -545,6 +545,7 @@ if (isUSD && hasPositiveOutlook && hasNegativePressure) {
 // NO CLEAR EVENT DIRECTION
 if (
   sentiment === 'NEUTRAL' &&
+  !(isGold && goldBullishClue && goldBearishClue) &&
   (isInflation || isJobs || isFed || isYield || isGDP)
 ) {
   analysis = 'Economic event detected, but the headline does not provide enough directional evidence.';
