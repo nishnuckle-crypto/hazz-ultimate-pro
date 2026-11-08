@@ -503,7 +503,24 @@ else if (isGDP) {
     bearishGold('Stronger economic growth may support USD and reduce demand for safe-haven gold.');
   }
 }
+// GOLD PRICE NEWS ANALYSIS
+if (sentiment === 'NEUTRAL' && isGold) {
+  if (/rises|rising|surges|jumps|climbs|higher|gains|rebounds|rally/.test(title)) {
+    bullishGold('Positive gold price movement may indicate bullish momentum.');
+  } else if (/falls|falling|drops|declines|lower|slumps|loses|selloff|sell-off/.test(title)) {
+    bearishGold('Negative gold price movement may indicate bearish momentum.');
+  }
+}
 
+// USD STRENGTH ANALYSIS
+if (sentiment === 'NEUTRAL' && isUSD) {
+  if (/strengthens|strengthening|surges|gains|rallies|rally|rises|higher/.test(title)) {
+    bearishGold('A stronger US dollar may put pressure on gold.');
+  } else if (/weakens|weakening|slumps|falls|declines|drops|lower/.test(title)) {
+    bullishGold('A weaker US dollar may provide support for gold.');
+  }
+}
+    
 // NO CLEAR EVENT DIRECTION
 if (
   sentiment === 'NEUTRAL' &&
