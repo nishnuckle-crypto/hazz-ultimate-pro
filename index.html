@@ -441,8 +441,10 @@ const dovish = /dovish|rate cut|easing|rate reduction|cuts interest rates|cut in
 
 const rising = /rising|surges|jumps|climbs|higher/.test(title);
 const falling = /falling|drops|declines|lower/.test(title);
+const hasPositiveOutlook = /positive outlook|bullish outlook|optimistic outlook|retains positive outlook/.test(title);
+const hasNegativePressure = /election pressure|under pressure|pressure on|pressures/.test(title);
 
-function bullishGold(reason) {
+  function bullishGold(reason) {
   sentiment = 'BULLISH';
   goldImpact = 'POTENTIALLY BULLISH';
   usdImpact = 'POTENTIALLY BEARISH';
@@ -520,7 +522,13 @@ if (sentiment === 'NEUTRAL' && isUSD) {
     bullishGold('A weaker US dollar may provide support for gold.');
   }
 }
-    
+// CONFLICTING USD HEADLINE
+if (isUSD && hasPositiveOutlook && hasNegativePressure) {
+  sentiment = 'NEUTRAL';
+  goldImpact = 'UNCERTAIN';
+  usdImpact = 'UNCERTAIN';
+  analysis = 'The headline contains conflicting USD signals: positive outlook and short-term pressure. Direction remains uncertain.';
+}    
 // NO CLEAR EVENT DIRECTION
 if (
   sentiment === 'NEUTRAL' &&
