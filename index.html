@@ -511,10 +511,18 @@ if (sentiment === 'NEUTRAL' && isSafeHaven) {
   bullishGold('Geopolitical uncertainty and risk aversion may increase safe-haven demand for gold.');
 }   
 // GOLD PRICE NEWS ANALYSIS
-if (sentiment === 'NEUTRAL' && isGold) {
-  if (/rises|rising|surges|jumps|climbs|higher|gains|rebounds|rebound|rally|rallies|price target raised|raises gold target/.test(title)) {
+const goldBullishClue = /rises|rising|surges|jumps|climbs|higher|gains|rebounds|rebound|rally|rallies|price target raised|raises gold target|recovery/.test(title);
+const goldBearishClue = /falls|falling|drops|declines|lower|slumps|loses|selloff|sell-off|threaten recovery|under pressure/.test(title);
+  if (sentiment === 'NEUTRAL' && isGold && goldBullishClue && goldBearishClue) {
+  sentiment = 'NEUTRAL';
+  goldImpact = 'UNCERTAIN';
+  usdImpact = 'UNCERTAIN';
+  analysis = 'The headline contains conflicting bullish and bearish gold signals. Direction remains uncertain.';
+}
+    if (sentiment === 'NEUTRAL' && isGold && !(goldBullishClue && goldBearishClue)) {
+  if (goldBullishClue) {
     bullishGold('Positive gold price movement may indicate bullish momentum.');
-  } else if (/falls|falling|drops|declines|lower|slumps|loses|selloff|sell-off/.test(title)) {
+  } else if (goldBearishClue) {
     bearishGold('Negative gold price movement may indicate bearish momentum.');
   }
 }
