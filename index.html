@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,20 +7,101 @@
 <meta name="theme-color" content="#080808">
 <title>HAZZ ULTIMATE PRO</title>
 <style>
-body {
-  background:#080808;
-  color:#d9b56d;
-  font-family:Arial,sans-serif;
-  text-align:center;
-  padding:50px 20px;
+*{box-sizing:border-box}
+body{
+ margin:0;background:#080808;color:#eee;
+ font-family:Arial,sans-serif;
 }
-h1 { letter-spacing:3px; }
-p { color:white; }
+header{
+ padding:22px 18px;
+ border-bottom:1px solid #594a2c;
+ background:#101010;
+}
+.logo{color:#d9b56d;font-size:23px;font-weight:bold;letter-spacing:2px}
+.sub{font-size:10px;color:#999;letter-spacing:3px;margin-top:7px}
+main{padding:18px;max-width:800px;margin:auto}
+.panel{
+ background:#141414;border:1px solid #34302a;
+ border-radius:12px;padding:18px;margin-bottom:16px;
+}
+h2{font-size:14px;color:#d9b56d;letter-spacing:1px}
+.muted{color:#888;font-size:12px}
+.status{color:#d9b56d;font-size:12px}
+.market{
+ display:grid;grid-template-columns:repeat(3,1fr);gap:9px;
+}
+.market div{
+ background:#202020;padding:13px 5px;
+ text-align:center;border-radius:8px;font-size:12px;
+}
+button{
+ background:#d9b56d;color:#080808;border:0;
+ padding:13px;border-radius:7px;font-weight:bold;
+ width:100%;margin-top:10px;
+}
+.nav{
+ display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+.nav div{
+ background:#202020;padding:17px 10px;
+ border-radius:8px;text-align:center;
+ color:#d9b56d;font-size:12px;
+}
+footer{text-align:center;padding:25px;color:#666;font-size:10px}
 </style>
 </head>
 <body>
-<h1>HAZZ ULTIMATE PRO</h1>
-<p>AI TRADING INTELLIGENCE</p>
-<p>Welcome to the new platform.</p>
+
+<header>
+ <div class="logo">HAZZ ULTIMATE PRO</div>
+ <div class="sub">AI TRADING INTELLIGENCE</div>
+</header>
+
+<main>
+ <section class="panel">
+  <h2>SYSTEM OVERVIEW</h2>
+  <p class="status">● PLATFORM ONLINE</p>
+  <p class="muted">Welcome to HAZZ Ultimate Pro.</p>
+ </section>
+
+ <section class="panel">
+  <h2>MARKET SELECTOR</h2>
+  <div class="market">
+   <div>XAUUSD</div>
+   <div>EURUSD</div>
+   <div>GBPUSD</div>
+   <div>USDJPY</div>
+   <div>GBPJPY</div>
+   <div>BTCUSD</div>
+  </div>
+ </section>
+
+ <section class="panel">
+  <h2>AI INTELLIGENCE</h2>
+  <div class="nav">
+   <div>AI NEWS<br><br>INTELLIGENCE</div>
+   <div>AI SIGNAL<br><br>ENGINE</div>
+   <div>ECONOMIC<br><br>CALENDAR</div>
+   <div>MARKET<br><br>ANALYSIS</div>
+  </div>
+ </section>
+
+ <section class="panel">
+  <h2>AI SIGNAL ENGINE</h2>
+  <p class="muted">SIGNAL STATUS</p>
+  <h2>NO SIGNAL</h2>
+  <p class="muted">Live market data not connected.</p>
+  <p class="muted">Entry: --</p>
+  <p class="muted">Stop Loss: --</p>
+  <p class="muted">Take Profit: --</p>
+ </section>
+
+ <section class="panel">
+  <h2>AI NEWS INTELLIGENCE</h2>
+  <p class="muted">News data connection pending.</p>
+ </section>
+</main>
+
+<footer>HAZZ ULTIMATE PRO © 2026</footer>
 </body>
 </html>
