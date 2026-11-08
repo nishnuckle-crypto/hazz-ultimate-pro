@@ -227,31 +227,60 @@ window.openModule = function(module) {
 if (module === 'news') {
   content.innerHTML = `
     <h3>AI NEWS INTELLIGENCE</h3>
-
-    <div class="news-card">
-      <h4>GLOBAL MARKET NEWS</h4>
-      <p>Forex & Gold Market Updates</p>
-      <span>LIVE NEWS FEED</span>
-    </div>
-
-    <div class="news-card">
-      <h4>ECONOMIC EVENTS</h4>
-      <p>FOMC • CPI • NFP • PCE • GDP</p>
-      <span>ECONOMIC MONITOR</span>
-    </div>
-
-    <div class="news-card">
-      <h4>AI MARKET SENTIMENT</h4>
-      <p>Bullish / Bearish / Neutral</p>
-      <span>AI ANALYSIS</span>
-    </div>
-
-    <div class="news-card">
-      <h4>MARKET IMPACT</h4>
-      <p>LOW • MEDIUM • HIGH • CRITICAL</p>
-      <span>IMPACT MONITOR</span>
-    </div>
+    <p id="newsStatus">Connecting to live news...</p>
+    <div id="liveNewsFeed"></div>
   `;
+
+  async function loadNews() {
+    const status = document.getElementById('newsStatus');
+    const feed = document.getElementById('liveNewsFeed');
+
+    try {
+      status.textContent = 'Updating live news...';
+
+      const response = await fetch('/api/news');
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'News unavailable');
+      }
+
+      const escapeHTML = value =>
+        String(value || '').replace(/[&<>"']/g, char => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        })[char]);
+
+      status.textContent =
+        `${data.total} ARTICLES • ${data.source} • UPDATED ${new Date().toLocaleTimeString()}`;
+
+      feed.innerHTML = data.articles.slice(0, 20).map(article => `
+        <div class="news-card">
+          <h4>${escapeHTML(article.title)}</h4>
+          <p>${escapeHTML(article.source)}</p>
+          <span>${escapeHTML(article.published_at)}</span>
+          <p><a href="${escapeHTML(article.url)}"
+            target="_blank" rel="noopener noreferrer">
+            READ FULL NEWS ↗
+          </a></p>
+        </div>
+      `).join('');
+
+    } catch (error) {
+      status.textContent = 'LIVE NEWS ERROR: ' + error.message;
+    }
+  }
+
+  if (window.newsRefreshTimer) {
+    clearInterval(window.newsRefreshTimer);
+  }
+
+  loadNews();
+  window.newsRefreshTimer = setInterval(loadNews, 300000);
+
   return;
 }
 
