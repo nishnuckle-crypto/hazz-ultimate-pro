@@ -63,11 +63,13 @@ Do not treat a possible market reaction as guaranteed.
 If information is insufficient, use UNCERTAIN.
 This is analysis, not a trading instruction.
           `,
-          input: JSON.stringify({
-            title: title.slice(0, 1000),
-            source: String(source || "Unknown").slice(0, 200),
-            published_at: String(published_at || "").slice(0, 100)
-          }),
+          
+input: "Analyze the following financial news. Return your answer in JSON format only:\n" + JSON.stringify({
+  title: title.slice(0, 1000),
+  source: String(source || "Unknown").slice(0, 200),
+  published_at: String(published_at || "").slice(0, 100)
+}),
+
           text: {
             format: {
               type: "json_object"
