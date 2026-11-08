@@ -415,62 +415,100 @@ feed.querySelectorAll('.ai-analyze-button').forEach(button => {
 
     const title = article.title.toLowerCase();
 
-    const bullishWords = [
-      'rally', 'surge', 'gain', 'rise', 'rising',
-      'strong', 'rebound', 'dovish', 'rate cut',
-      'weak dollar', 'dollar weakens'
-    ];
+let sentiment = 'NEUTRAL';
+let goldImpact = 'UNCERTAIN';
+let usdImpact = 'UNCERTAIN';
+let analysis = 'Insufficient information to determine market direction.';
 
-    const bearishWords = [
-      'crash', 'fall', 'drop', 'decline',
-      'selloff', 'hawkish', 'rate hike',
-      'strong dollar', 'dollar strengthens'
-    ];
+// EVENT DETECTION
+const isInflation = /cpi|pce|inflation|consumer price|prices/.test(title);
+const isJobs = /nfp|nonfarm|payroll|employment|unemployment|jobless|wage/.test(title);
+const isFed = /fomc|federal reserve|fed policy|interest rate|rate cut|rate hike/.test(title);
+const isYield = /treasury yield|bond yield|10-year yield|10 year yield/.test(title);
+const isGDP = /gdp|recession|economic growth/.test(title);
 
-    const bullishCount = bullishWords.filter(
-      word => title.includes(word)
-    ).length;
+// DIRECTION KEYWORDS
+const hotter = /hotter|higher|rises|rising|accelerates|accelerating|above forecast|beats expectations/.test(title);
+const cooler = /cooler|lower|falls|falling|slows|slowing|below forecast|misses expectations/.test(title);
 
-    const bearishCount = bearishWords.filter(
-      word => title.includes(word)
-    ).length;
+const strong = /stronger|strong growth|surges|jumps|robust|beats expectations/.test(title);
+const weak = /weaker|weak growth|slumps|declines|contracts|misses expectations/.test(title);
 
-    let sentiment = 'NEUTRAL';
+const hawkish = /hawkish|rate hike|higher for longer|tightening/.test(title);
+const dovish = /dovish|rate cut|easing|rate reduction/.test(title);
 
-    if (bullishCount > bearishCount) {
-      sentiment = 'BULLISH';
-    } else if (bearishCount > bullishCount) {
-      sentiment = 'BEARISH';
-    }
+const rising = /rising|surges|jumps|climbs|higher/.test(title);
+const falling = /falling|drops|declines|lower/.test(title);
 
-    let goldImpact = 'UNCERTAIN';
-    let usdImpact = 'UNCERTAIN';
+function bullishGold(reason) {
+  sentiment = 'BULLISH';
+  goldImpact = 'POTENTIALLY BULLISH';
+  usdImpact = 'POTENTIALLY BEARISH';
+  analysis = reason;
+}
 
-    if (title.includes('dollar weakens') ||
-        title.includes('weak dollar')) {
-      goldImpact = 'POTENTIALLY BULLISH';
-      usdImpact = 'BEARISH';
-    }
+function bearishGold(reason) {
+  sentiment = 'BEARISH';
+  goldImpact = 'POTENTIALLY BEARISH';
+  usdImpact = 'POTENTIALLY BULLISH';
+  analysis = reason;
+}
 
-    if (title.includes('dollar strengthens') ||
-        title.includes('strong dollar')) {
-      goldImpact = 'POTENTIALLY BEARISH';
-      usdImpact = 'BULLISH';
-    }
+// INFLATION ANALYSIS
+if (isInflation) {
+  if (cooler) {
+    bullishGold('Cooling inflation may reduce pressure for tighter Fed policy, potentially supporting gold.');
+  } else if (hotter) {
+    bearishGold('Hotter inflation may increase expectations of tighter Fed policy, potentially supporting USD.');
+  }
+}
 
-    let analysis =
-      'The headline does not provide enough information for a reliable directional conclusion.';
+// EMPLOYMENT ANALYSIS
+else if (isJobs) {
+  if (weak) {
+    bullishGold('Weaker employment may increase expectations of monetary easing, potentially supporting gold.');
+  } else if (strong) {
+    bearishGold('Stronger employment may support USD and reduce expectations of near-term rate cuts.');
+  }
+}
 
-    if (sentiment === 'BULLISH') {
-      analysis =
-        'Positive market-related keywords detected. Monitor price action and confirmation before taking a position.';
-    }
+// FED ANALYSIS
+else if (isFed) {
+  if (dovish) {
+    bullishGold('A dovish Federal Reserve stance may weaken USD and support gold.');
+  } else if (hawkish) {
+    bearishGold('A hawkish Federal Reserve stance may strengthen USD and pressure gold.');
+  }
+}
 
-    if (sentiment === 'BEARISH') {
-      analysis =
-        'Negative market-related keywords detected. Monitor price action and confirmation before taking a position.';
-    }
+// TREASURY YIELD ANALYSIS
+else if (isYield) {
+  if (rising) {
+    bearishGold('Rising Treasury yields may increase the opportunity cost of holding non-yielding gold.');
+  } else if (falling) {
+    bullishGold('Falling Treasury yields may reduce the opportunity cost of holding gold.');
+  }
+}
 
+// GDP / RECESSION ANALYSIS
+else if (isGDP) {
+  if (weak) {
+    sentiment = 'MIXED';
+    goldImpact = 'POTENTIALLY BULLISH';
+    usdImpact = 'UNCERTAIN';
+    analysis = 'Weak growth may increase safe-haven demand, although USD direction can remain mixed.';
+  } else if (strong) {
+    bearishGold('Stronger economic growth may support USD and reduce demand for safe-haven gold.');
+  }
+}
+
+// NO CLEAR EVENT DIRECTION
+if (
+  sentiment === 'NEUTRAL' &&
+  (isInflation || isJobs || isFed || isYield || isGDP)
+) {
+  analysis = 'Economic event detected, but the headline does not provide enough directional evidence.';
+}
     resultBox.innerHTML = `
       <div class="ai-analysis-panel">
         <h4>📊 FREE MARKET ANALYSIS</h4>
