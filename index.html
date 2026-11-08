@@ -873,8 +873,11 @@ return;
   ph < Math.max(po, pc) ||
   pl > Math.min(po, pc) ||
   ph < pl
-)
-      }
+) {
+  result.innerHTML =
+    '<h4>INVALID PRICE DATA</h4><p>Please check OHLC values.</p>';
+  return;
+}
 
       const range = h - l;
       const body = Math.abs(c - o);
