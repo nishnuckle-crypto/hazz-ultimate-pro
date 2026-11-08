@@ -1,32 +1,66 @@
+function decodeXML(value = "") {
+  return value
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+function getTag(xml, tag) {
+  const match = xml.match(
+    new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)<\\\\/${tag}>`, "i")
+  );
+
+  return match ? decodeXML(match[1].trim()) : "";
+}
+
 export default async function handler(req, res) {
   try {
+    const query =
+      '(gold OR XAUUSD OR forex OR "Federal Reserve" OR CPI OR NFP OR FOMC OR PCE OR GDP OR inflation)';
+
     const url = new URL(
-      "https://api.gdeltproject.org/api/v2/doc/doc"
+      "https://news.google.com/rss/search"
     );
 
-    url.searchParams.set(
-      "query",
-      '(gold OR XAUUSD OR forex OR "Federal Reserve" OR CPI OR NFP OR FOMC OR inflation)'
-    );
-    url.searchParams.set("mode", "ArtList");
-    url.searchParams.set("format", "json");
-    url.searchParams.set("maxrecords", "50");
-    url.searchParams.set("sort", "DateDesc");
+    url.searchParams.set("q", query);
+    url.searchParams.set("hl", "en-US");
+    url.searchParams.set("gl", "US");
+    url.searchParams.set("ceid", "US:en");
 
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "HAZZ-ULTIMATE-PRO/1.0"
+      }
+    });
 
     if (!response.ok) {
       throw new Error(`News source error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const xml = await response.text();
 
-    res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=120");
+    const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
+
+    const articles = items.map(item => ({
+      title: getTag(item, "title"),
+      source: getTag(item, "source") || "Google News",
+      url: getTag(item, "link"),
+      published_at: getTag(item, "pubDate")
+    })).filter(article => article.title && article.url);
+
+    res.setHeader(
+      "Cache-Control",
+      "s-maxage=300, stale-while-revalidate=600"
+    );
 
     return res.status(200).json({
       success: true,
-      total: data.articles?.length || 0,
-      articles: data.articles || []
+      total: articles.length,
+      source: "Google News RSS",
+      articles
     });
 
   } catch (error) {
