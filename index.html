@@ -427,6 +427,7 @@ const isFed = /fomc|federal reserve|fed policy|interest rate|rate cut|rate hike/
 const isYield = /treasury yield|bond yield|10-year yield|10 year yield/.test(title);
 const isGDP = /gdp|recession|economic growth/.test(title);
 const isGold = /gold price|gold prices|bullion|xauusd|gold market|gold forecast|gold target/.test(title);
+const isSafeHaven = /safe haven|safe-haven|geopolitical tension|geopolitical risk|military conflict|armed conflict|war escalates|war fears|global uncertainty|investor fear|risk aversion|flight to safety|flight to quality|market turmoil|financial instability/.test(title);
 const isUSD = /us dollar|u.s. dollar|dollar index|dxy|usd strength|usd weakness/.test(title);
     
 // DIRECTION KEYWORDS
@@ -505,6 +506,10 @@ else if (isGDP) {
     bearishGold('Stronger economic growth may support USD and reduce demand for safe-haven gold.');
   }
 }
+ // SAFE-HAVEN DEMAND ANALYSIS
+if (sentiment === 'NEUTRAL' && isSafeHaven) {
+  bullishGold('Geopolitical uncertainty and risk aversion may increase safe-haven demand for gold.');
+}   
 // GOLD PRICE NEWS ANALYSIS
 if (sentiment === 'NEUTRAL' && isGold) {
   if (/rises|rising|surges|jumps|climbs|higher|gains|rebounds|rebound|rally|rallies|price target raised|raises gold target/.test(title)) {
