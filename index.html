@@ -501,43 +501,68 @@ let sentiment = 'NEUTRAL';
 let goldImpact = 'UNCERTAIN';
 let usdImpact = 'UNCERTAIN';
 let importance = 'LOW';
-let analysis = 'Insufficient evidence to determine market direction.';
-let riskNote = 'Headline-based analysis only. Verify with official data and live price action.';
+let analysis = 'No reliable directional evidence found in the headline.';
+let riskNote = 'Headline-based analysis only. Confirm with official economic data and live price action.';
 
-const isInflation = /\b(cpi|pce|inflation|consumer price|prices)\b/.test(title);
-const isJobs = /\b(nfp|nonfarm|payroll|employment|unemployment|jobless|wage|labor market|labour market|adp employment)\b/.test(title);
-const isFed = /\b(fomc|federal reserve|fed policy|interest rate|rate cut|rate hike)\b/.test(title);
-const isYield = /\b(treasury yield|bond yield|10-year yield|10 year yield)\b/.test(title);
-const isGDP = /\b(gdp|recession|economic growth)\b/.test(title);
-const isGold = /\b(gold|bullion|xauusd)\b/.test(title);
-const isUSD = /\b(us dollar|u.s. dollar|dollar index|dxy|usd)\b/.test(title);
-const isSafeHaven = /\b(safe haven|safe-haven|geopolitical|military conflict|armed conflict|war|risk aversion|flight to safety|market turmoil|banking crisis)\b/.test(title);
+// NEWS IMPORTANCE
+const criticalEvent =
+  /\b(emergency rate|emergency meeting|unscheduled meeting|surprise rate decision|financial crisis|bank failure)\b/.test(title);
 
-const hotter = /\b(hotter|higher|rises|rising|accelerates|above forecast|beats expectations|high inflation|persistent inflation)\b/.test(title);
-const cooler = /\b(cooler|lower|falls|falling|slows|below forecast|misses expectations|cools|cooling|eases|disinflation)\b/.test(title);
+const highEvent =
+  /\b(fomc|federal reserve|fed meeting|cpi|nfp|nonfarm payroll|pce|interest rate decision|employment report)\b/.test(title);
 
-const strong = /\b(stronger|strong growth|surges|jumps|robust|beats expectations|higher than expected|employment rises|unemployment falls)\b/.test(title);
-const weak = /\b(weaker|weak growth|slumps|declines|contracts|misses expectations|lower than expected|employment falls|unemployment rises|job losses)\b/.test(title);
+const mediumEvent =
+  /\b(inflation|employment|unemployment|payroll|gdp|recession|treasury yield|bond yield|gold|xauusd|us dollar|dollar index|dxy)\b/.test(title);
 
-const hawkish = /\b(hawkish|rate hike|higher for longer|tightening|raises interest rates|restrictive monetary policy)\b/.test(title);
-const dovish = /\b(dovish|rate cut|easing|cuts interest rates|monetary easing|lower for longer)\b/.test(title);
+if (criticalEvent) {
+  importance = 'CRITICAL';
+} else if (highEvent) {
+  importance = 'HIGH';
+} else if (mediumEvent) {
+  importance = 'MEDIUM';
+}
 
-const rising = /\b(rising|surges|jumps|climbs|higher|increases)\b/.test(title);
-const falling = /\b(falling|drops|declines|lower|decreases)\b/.test(title);
+// DIRECTIONAL CLUES
+const goldUp =
+  /\b(gold rises|gold rose|gold gains|gold rallies|gold jumps|gold surges|bullion rises)\b/.test(title);
 
-const criticalEvent = /\b(emergency rate|emergency meeting|surprise rate|unscheduled meeting|financial crisis|bank failure)\b/.test(title);
-const highEvent = /\b(fomc|federal reserve|cpi|nonfarm payroll|nfp|pce|interest rate decision)\b/.test(title);
-const mediumEvent = /\b(gdp|inflation|employment|unemployment|treasury yield|bond yield|recession)\b/.test(title);
+const goldDown =
+  /\b(gold falls|gold fell|gold drops|gold declines|gold slumps|gold selloff|bullion falls)\b/.test(title);
 
-const hasBullishClue = /\b(rises|rising|surges|jumps|gains|rebounds|rally|rallies|higher|strengthens)\b/.test(title);
-const hasBearishClue = /\b(falls|falling|drops|declines|slumps|loses|selloff|sell-off|lower|weakens)\b/.test(title);
+const usdUp =
+  /\b(dollar rises|dollar gains|dollar strengthens|dollar rallies|usd strengthens|dollar gets stronger|dollar advances)\b/.test(title);
 
-const hasConflict =
-  (hasBullishClue && hasBearishClue) ||
-  (hotter && cooler) ||
-  (strong && weak) ||
-  (hawkish && dovish);
+const usdDown =
+  /\b(dollar falls|dollar retreats|dollar slips|dollar weakens|usd weakens|dollar declines|dollar loses ground)\b/.test(title);
 
+const inflationHot =
+  /\b(hotter inflation|inflation rises|inflation accelerates|inflation heats up|higher than expected inflation)\b/.test(title);
+
+const inflationCool =
+  /\b(cooling inflation|inflation cools|inflation eases|inflation slows|softer inflation|inflation falls|disinflation)\b/.test(title);
+
+const jobsStrong =
+  /\b(strong employment|strong jobs|strong payroll|stronger jobs|employment rises|unemployment falls|job growth accelerates)\b/.test(title);
+
+const jobsWeak =
+  /\b(weak employment|weak jobs|weak payroll|weaker jobs|employment falls|unemployment rises|job losses)\b/.test(title);
+
+const hawkish =
+  /\b(hawkish|rate hike|rate hikes|raises interest rates|higher for longer|monetary tightening)\b/.test(title);
+
+const dovish =
+  /\b(dovish|rate cut|rate cuts|cuts interest rates|monetary easing|policy easing)\b/.test(title);
+
+const yieldUp =
+  /\b(yields rise|yield rises|yields climb|rising yields|higher treasury yields)\b/.test(title);
+
+const yieldDown =
+  /\b(yields fall|yield falls|yields decline|falling yields|lower treasury yields)\b/.test(title);
+
+const safeHaven =
+  /\b(geopolitical tensions|military conflict|armed conflict|war escalates|flight to safety|safe haven demand|banking crisis)\b/.test(title);
+
+// ANALYSIS FUNCTIONS
 function bullishGold(reason) {
   sentiment = 'BULLISH';
   goldImpact = 'POTENTIALLY BULLISH';
@@ -552,112 +577,106 @@ function bearishGold(reason) {
   analysis = reason;
 }
 
-// NEWS IMPORTANCE
-if (criticalEvent) {
-  importance = 'CRITICAL';
-} else if (highEvent) {
-  importance = 'HIGH';
-} else if (mediumEvent || isSafeHaven || isGold || isUSD) {
-  importance = 'MEDIUM';
-}
+// CONFLICT DETECTION
+const conflict =
+  (goldUp && goldDown) ||
+  (usdUp && usdDown) ||
+  (inflationHot && inflationCool) ||
+  (jobsStrong && jobsWeak) ||
+  (hawkish && dovish) ||
+  (yieldUp && yieldDown);
 
-// CONFLICT CHECK FIRST
-if (hasConflict) {
+// PRIORITY 1: CONFLICT
+if (conflict) {
   sentiment = 'NEUTRAL';
   goldImpact = 'UNCERTAIN';
   usdImpact = 'UNCERTAIN';
-  analysis = 'Conflicting headline signals detected. Market direction remains uncertain.';
-  riskNote = 'Conflicting headline evidence. Wait for official data and confirmed price action.';
+  analysis = 'Conflicting economic or market signals detected. Direction is uncertain.';
+  riskNote = 'Conflicting headline evidence. Wait for official data and price confirmation.';
 }
 
-// INFLATION
-else if (isInflation) {
-  if (cooler) {
-    bullishGold('Cooling inflation may reduce expectations for tighter monetary policy and support gold.');
-  } else if (hotter) {
-    bearishGold('Hotter inflation may increase expectations for tighter monetary policy and support USD.');
-  }
+// PRIORITY 2: DIRECT GOLD PRICE MOVEMENT
+else if (goldUp) {
+  bullishGold('Gold price is reported higher. This describes the reported move, not a prediction of future price.');
+} else if (goldDown) {
+  bearishGold('Gold price is reported lower. This describes the reported move, not a prediction of future price.');
 }
 
-// EMPLOYMENT
-else if (isJobs) {
-  if (weak) {
-    bullishGold('Weaker employment may increase expectations of monetary easing and support gold.');
-  } else if (strong) {
-    bearishGold('Stronger employment may support USD and pressure gold.');
-  }
+// PRIORITY 3: USD MOVEMENT
+else if (usdUp) {
+  bearishGold('A stronger USD may put downward pressure on XAUUSD.');
+} else if (usdDown) {
+  bullishGold('A weaker USD may provide support for XAUUSD.');
 }
 
-// FED POLICY
-else if (isFed) {
-  if (hawkish) {
-    bearishGold('Hawkish Fed policy may support USD and pressure gold.');
-  } else if (dovish) {
-    bullishGold('Dovish Fed policy may weaken USD and support gold.');
-  }
+// PRIORITY 4: INFLATION
+else if (inflationCool) {
+  bullishGold('Cooling inflation may reduce expectations for tighter monetary policy and support gold.');
+} else if (inflationHot) {
+  bearishGold('Hotter inflation may increase expectations for tighter monetary policy and support USD.');
 }
 
-// TREASURY YIELDS
-else if (isYield) {
-  if (rising) {
-    bearishGold('Rising Treasury yields may increase the opportunity cost of holding gold.');
-  } else if (falling) {
-    bullishGold('Falling Treasury yields may reduce the opportunity cost of holding gold.');
-  }
+// PRIORITY 5: EMPLOYMENT
+else if (jobsStrong) {
+  bearishGold('Stronger employment may support USD and put pressure on gold.');
+} else if (jobsWeak) {
+  bullishGold('Weaker employment may increase expectations of monetary easing and support gold.');
 }
 
-// GDP
-else if (isGDP) {
-  if (weak) {
-    sentiment = 'MIXED';
-    goldImpact = 'POTENTIALLY BULLISH';
-    usdImpact = 'UNCERTAIN';
-    analysis = 'Weak growth may support safe-haven demand, but USD direction is uncertain.';
-  } else if (strong) {
-    bearishGold('Stronger economic growth may support USD and pressure gold.');
-  }
+// PRIORITY 6: FED POLICY
+else if (hawkish) {
+  bearishGold('Hawkish Fed policy may support USD and pressure gold.');
+} else if (dovish) {
+  bullishGold('Dovish Fed policy may weaken USD and support gold.');
 }
 
-// SAFE HAVEN
-else if (isSafeHaven) {
+// PRIORITY 7: TREASURY YIELDS
+else if (yieldUp) {
+  bearishGold('Rising Treasury yields may increase the opportunity cost of holding gold.');
+} else if (yieldDown) {
+  bullishGold('Falling Treasury yields may reduce the opportunity cost of holding gold.');
+}
+
+// PRIORITY 8: SAFE HAVEN
+else if (safeHaven) {
   bullishGold('Geopolitical uncertainty may increase safe-haven demand for gold.');
-}
-
-// GOLD PRICE
-else if (isGold && hasBullishClue) {
-  bullishGold('Positive gold price movement detected. This describes price action, not a confirmed future direction.');
-} else if (isGold && hasBearishClue) {
-  bearishGold('Negative gold price movement detected. This describes price action, not a confirmed future direction.');
-}
-
-// USD
-else if (isUSD && hasBullishClue) {
-  bearishGold('Positive USD movement may put pressure on gold.');
-} else if (isUSD && hasBearishClue) {
-  bullishGold('Negative USD movement may provide support for gold.');
 }
 
 // NO CLEAR DIRECTION
 else {
-  analysis = 'No reliable directional evidence found in the headline. Further confirmation is required.';
+  analysis = 'No reliable directional evidence found. The headline does not provide enough information to determine market direction.';
+  riskNote = 'Insufficient directional evidence. Do not treat this headline as a trading signal.';
 }
 
-// SAFETY WARNING
-if (sentiment === 'NEUTRAL' || sentiment === 'MIXED') {
+// FED MEETING WITHOUT POLICY DIRECTION
+if (
+  /\b(fomc|federal reserve|fed meeting)\b/.test(title) &&
+  !hawkish &&
+  !dovish &&
+  !conflict
+) {
+  sentiment = 'NEUTRAL';
+  goldImpact = 'UNCERTAIN';
+  usdImpact = 'UNCERTAIN';
+  analysis = 'Fed meeting detected. Policy direction cannot be determined from the headline alone.';
+  riskNote = 'Check the official Fed statement and policy guidance before assessing market direction.';
+}
+
+// NEUTRAL SAFETY
+if (sentiment === 'NEUTRAL') {
   riskNote = 'Directional evidence is insufficient or mixed. Do not treat this headline as a trading signal.';
 }
 
+// DISPLAY RESULT
 resultBox.innerHTML = `
   <div class="ai-analysis-panel">
     <h4>📊 HAZZ MARKET INTELLIGENCE</h4>
-
     <p><b>NEWS IMPORTANCE:</b> ${importance}</p>
     <p><b>MARKET SENTIMENT:</b> ${sentiment}</p>
     <p><b>GOLD IMPACT (XAUUSD):</b> ${goldImpact}</p>
     <p><b>USD IMPACT:</b> ${usdImpact}</p>
     <p><b>MARKET ANALYSIS:</b> ${analysis}</p>
     <p><b>RISK NOTE:</b> ${riskNote}</p>
-
     <p><small>RULE-BASED ENGINE • NO OPENAI API REQUIRED</small></p>
   </div>
 `;
