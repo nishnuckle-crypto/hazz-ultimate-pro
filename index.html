@@ -777,11 +777,11 @@ if (isBullish && !isBearish) {
 }
   });
 
-  const directionalTotal = bullish + bearish;
+  const directionalTotal = bullish + bearish + neutral;
 
-  const score = directionalTotal
-    ? Math.round(((bullish - bearish) / directionalTotal) * 100)
-    : null;
+const score = directionalTotal > 0
+  ? Math.round(((bullish - bearish) / directionalTotal) * 100)
+  : null;
 
   let direction = 'INSUFFICIENT EVIDENCE';
 
