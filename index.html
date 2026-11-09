@@ -924,6 +924,15 @@ return;
 <h4>H4 TREND</h4>
 <input id="mtfH4Open" type="number" step="any" placeholder="H4 OPEN">
 <input id="mtfH4Close" type="number" step="any" placeholder="H4 CLOSE">
+    <h4>MARKET STRUCTURE DATA</h4>
+
+<h4>PREVIOUS SWING</h4>
+<input id="previousSwingHigh" type="number" step="any" placeholder="PREVIOUS SWING HIGH">
+<input id="previousSwingLow" type="number" step="any" placeholder="PREVIOUS SWING LOW">
+
+<h4>LATEST SWING</h4>
+<input id="latestSwingHigh" type="number" step="any" placeholder="LATEST SWING HIGH">
+<input id="latestSwingLow" type="number" step="any" placeholder="LATEST SWING LOW">  
       <button id="calculateCandle" class="ai-analyze-button">
       ANALYZE MARKET
       </button>
@@ -966,6 +975,12 @@ const mtfH1Close = Number(document.getElementById('mtfH1Close').value);
 
 const mtfH4Open = Number(document.getElementById('mtfH4Open').value);
 const mtfH4Close = Number(document.getElementById('mtfH4Close').value);
+      // MARKET STRUCTURE DATA
+const previousSwingHigh = Number(document.getElementById('previousSwingHigh').value);
+const previousSwingLow = Number(document.getElementById('previousSwingLow').value);
+
+const latestSwingHigh = Number(document.getElementById('latestSwingHigh').value);
+const latestSwingLow = Number(document.getElementById('latestSwingLow').value);
       const result = document.getElementById('technicalResult');
 
       if (
@@ -976,7 +991,9 @@ const mtfH4Close = Number(document.getElementById('mtfH4Close').value);
     mtfM15Open, mtfM15Close,
     mtfM30Open, mtfM30Close,
     mtfH1Open, mtfH1Close,
-    mtfH4Open, mtfH4Close
+    mtfH4Open, mtfH4Close,
+    previousSwingHigh, previousSwingLow,
+    latestSwingHigh, latestSwingLow
   ].every(Number.isFinite) ||
 
   [
@@ -986,7 +1003,9 @@ const mtfH4Close = Number(document.getElementById('mtfH4Close').value);
     'mtfM15Open','mtfM15Close',
     'mtfM30Open','mtfM30Close',
     'mtfH1Open','mtfH1Close',
-    'mtfH4Open','mtfH4Close'
+    'mtfH4Open','mtfH4Close',
+    'previousSwingHigh','previousSwingLow',
+    'latestSwingHigh','latestSwingLow'
   ].some(id => document.getElementById(id).value.trim() === '') ||
 
   h < Math.max(o, c) ||
@@ -997,10 +1016,12 @@ const mtfH4Close = Number(document.getElementById('mtfH4Close').value);
   ph < pl ||
   th < Math.max(to, tc) ||
   tl > Math.min(to, tc) ||
-  th < tl
+  th < tl ||
+  previousSwingHigh <= previousSwingLow ||
+  latestSwingHigh <= latestSwingLow
 ) {
   result.innerHTML =
-    '<h4>INVALID PRICE DATA</h4><p>Please check OHLC values.</p>';
+    '<h4>INVALID PRICE DATA</h4><p>Please check OHLC and swing values.</p>';
   return;
 }
 
@@ -1273,6 +1294,49 @@ const mtfAlignment =
         : mtfBearishCount >= 3
           ? 'BEARISH ALIGNMENT'
           : 'MIXED / NO ALIGNMENT';
+      // MARKET STRUCTURE ANALYSIS
+
+const swingHighStatus =
+  latestSwingHigh > previousSwingHigh
+    ? 'HIGHER HIGH (HH)'
+    : latestSwingHigh < previousSwingHigh
+      ? 'LOWER HIGH (LH)'
+      : 'EQUAL HIGH (EQH)';
+
+const swingLowStatus =
+  latestSwingLow > previousSwingLow
+    ? 'HIGHER LOW (HL)'
+    : latestSwingLow < previousSwingLow
+      ? 'LOWER LOW (LL)'
+      : 'EQUAL LOW (EQL)';
+
+const structureTrend =
+  latestSwingHigh > previousSwingHigh &&
+  latestSwingLow > previousSwingLow
+    ? 'BULLISH STRUCTURE'
+    : latestSwingHigh < previousSwingHigh &&
+      latestSwingLow < previousSwingLow
+      ? 'BEARISH STRUCTURE'
+      : 'MIXED STRUCTURE';
+
+let bosStatus = 'NO BOS';
+let chochStatus = 'NO CHoCH';
+
+if (structureTrend === 'BULLISH STRUCTURE') {
+  if (c > previousSwingHigh) {
+    bosStatus = 'BULLISH BOS';
+  } else if (c < previousSwingLow) {
+    chochStatus = 'BEARISH CHoCH';
+  }
+}
+
+if (structureTrend === 'BEARISH STRUCTURE') {
+  if (c < previousSwingLow) {
+    bosStatus = 'BEARISH BOS';
+  } else if (c > previousSwingHigh) {
+    chochStatus = 'BULLISH CHoCH';
+  }
+}
       const direction = c > o ? 'BULLISH CANDLE'
         : c < o ? 'BEARISH CANDLE'
         : 'NEUTRAL CANDLE';
@@ -1388,6 +1452,34 @@ result.innerHTML = `
 <div class="result-row">
   <span class="result-label">MTF ALIGNMENT</span>
   <span class="result-value">${mtfAlignment}</span>
+</div>
+<div class="pattern-box">
+  MARKET STRUCTURE ANALYSIS
+</div>
+
+<div class="result-row">
+  <span class="result-label">SWING HIGH</span>
+  <span class="result-value">${swingHighStatus}</span>
+</div>
+
+<div class="result-row">
+  <span class="result-label">SWING LOW</span>
+  <span class="result-value">${swingLowStatus}</span>
+</div>
+
+<div class="result-row">
+  <span class="result-label">STRUCTURE TREND</span>
+  <span class="result-value">${structureTrend}</span>
+</div>
+
+<div class="result-row">
+  <span class="result-label">BREAK OF STRUCTURE</span>
+  <span class="result-value">${bosStatus}</span>
+</div>
+
+<div class="result-row">
+  <span class="result-label">CHANGE OF CHARACTER</span>
+  <span class="result-value">${chochStatus}</span>
 </div>
   <div class="result-row">
   <span class="result-label">MULTI-CANDLE CONFIRMATION</span>
