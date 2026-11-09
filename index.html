@@ -2025,7 +2025,12 @@ return {
   online: true,
   datetime: candle.datetime,
   ageMinutes: ageMinutes,
-  freshness: ageMinutes <= 90 ? 'FRESH' : 'STALE'
+  freshness: ageMinutes <= ({
+  M15: 20,
+  M30: 40,
+  H1: 75,
+  H4: 270
+}[tf]) ? 'FRESH' : 'STALE'
 };
 
         } catch (error) {
