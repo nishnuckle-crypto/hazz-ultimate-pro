@@ -181,6 +181,8 @@ button{width:100%;padding:14px;margin-top:12px;background:#d9b56d;border:0;borde
 .ai-analysis-panel h4 {
   color: #e5bd58;
   margin-top: 0;
+}
+
 #moduleContent select {
   width: 100%;
   padding: 12px;
@@ -1424,9 +1426,9 @@ result.innerHTML = `
       <span class="result-label">CANDLE MOMENTUM</span>
       <span class="result-value">${candleMomentum}</span>
     </div>
-    <div class="result-row">
     <div class="pattern-box">
-  MULTI-TIMEFRAME TREND CONFIRMATION
+  <h3>MULTI-TIMEFRAME ANALYSIS</h3>
+  <p>Trend confirmation across four timeframes</p>
 </div>
 
 <div class="result-row">
@@ -1454,7 +1456,8 @@ result.innerHTML = `
   <span class="result-value">${mtfAlignment}</span>
 </div>
 <div class="pattern-box">
-  MARKET STRUCTURE ANALYSIS
+  <h3>MARKET STRUCTURE</h3>
+  <p>HH / HL / LH / LL / BOS / CHoCH</p>
 </div>
 
 <div class="result-row">
@@ -1481,8 +1484,13 @@ result.innerHTML = `
   <span class="result-label">CHANGE OF CHARACTER</span>
   <span class="result-value">${chochStatus}</span>
 </div>
-  <div class="result-row">
-  <span class="result-label">MULTI-CANDLE CONFIRMATION</span>
+  <div class="pattern-box">
+  <h3>MULTI-CANDLE ANALYSIS</h3>
+  <p>Three-candle trend confirmation</p>
+</div>
+
+<div class="result-row">
+  <span class="result-label">CONFIRMATION</span>
   <span class="result-value">${multiCandleConfirmation}</span>
 </div>
 
@@ -1500,10 +1508,16 @@ result.innerHTML = `
   <span class="result-label">BEARISH CANDLES</span>
   <span class="result-value">${bearishCandles} / 3</span>
 </div>
-    <div class="result-row">
-      <span class="result-label">OPEN</span>
-      <span class="result-value">${o}</span>
-    </div>
+    <div class="pattern-box">
+  <h3>CANDLE PRICE DATA</h3>
+  <p>Current candle OHLC information</p>
+</div>
+<div class="result-row">
+  <span class="result-label">OPEN</span>
+  <span class="result-value">${o}</span>
+</div>
+  <p>Current candle OHLC information</p>
+</div>
     <div class="result-row">
       <span class="result-label">HIGH</span>
       <span class="result-value">${h}</span>
