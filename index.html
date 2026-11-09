@@ -504,22 +504,19 @@ let importance = 'LOW';
 let analysis = 'No reliable directional evidence found in the headline.';
 let riskNote = 'Headline-based analysis only. Confirm with official economic data and live price action.';
 
-// NEWS IMPORTANCE
-const criticalEvent =
-  /\b(emergency rate|emergency meeting|unscheduled meeting|surprise rate decision|financial crisis|bank failure)\b/.test(title);
+// NEWS IMPORTANCE - RSS PRIORITY
+const rssImpact = String(article.impact || '').toUpperCase();
 
-const highEvent =
-  /\b(fomc|federal reserve|fed meeting|cpi|nfp|nonfarm payroll|pce|interest rate decision|employment report)\b/.test(title);
-
-const mediumEvent =
-  /\b(inflation|employment|unemployment|payroll|gdp|recession|treasury yield|bond yield|gold|xauusd|us dollar|dollar index|dxy)\b/.test(title);
-
-if (criticalEvent) {
+if (['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].includes(rssImpact)) {
+  importance = rssImpact;
+} else if (criticalEvent) {
   importance = 'CRITICAL';
 } else if (highEvent) {
   importance = 'HIGH';
 } else if (mediumEvent) {
   importance = 'MEDIUM';
+} else {
+  importance = 'LOW';
 }
 
 // DIRECTIONAL CLUES
