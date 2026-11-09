@@ -600,27 +600,110 @@ const uniqueSources = new Set(
   )
 );
 
+// ==================================
+// HAZZ NEWS EVENT CLUSTERING
+// ==================================
+
+const eventGroups = [
+  {
+    name: 'FED / INTEREST RATES',
+    keywords: /\b(federal reserve|fed|fomc|interest rate|rate cut|rate hike|powell|monetary policy|hawkish|dovish)\b/i
+  },
+  {
+    name: 'INFLATION / CPI / PCE',
+    keywords: /\b(inflation|cpi|pce|consumer prices|producer prices|disinflation)\b/i
+  },
+  {
+    name: 'EMPLOYMENT / NFP',
+    keywords: /\b(nfp|nonfarm payrolls|payrolls|employment|unemployment|jobless claims|labor market|labour market|jobs report)\b/i
+  },
+  {
+    name: 'GDP / ECONOMIC GROWTH',
+    keywords: /\b(gdp|economic growth|recession|economic activity|business activity)\b/i
+  },
+  {
+    name: 'TREASURY YIELDS',
+    keywords: /\b(treasury yields|bond yields|10.year yield|10.year treasury|real yields)\b/i
+  },
+  {
+    name: 'GEOPOLITICAL RISK',
+    keywords: /\b(geopolitical|war|military conflict|sanctions|middle east|iran|israel|ukraine|russia)\b/i
+  },
+  {
+    name: 'GOLD MARKET',
+    keywords: /\b(gold|bullion|xauusd|precious metals)\b/i
+  }
+];
+
+const eventResults = eventGroups.map(group => {
+  const matched = uniqueArticles.filter(article =>
+    group.keywords.test(
+      String(article.title || '')
+    )
+  );
+
+  const bullish = matched.filter(article =>
+    String(article.sentiment || '').toUpperCase() === 'BULLISH'
+  ).length;
+
+  const bearish = matched.filter(article =>
+    String(article.sentiment || '').toUpperCase() === 'BEARISH'
+  ).length;
+
+  let direction = 'NEUTRAL / UNCONFIRMED';
+
+  if (matched.length >= 2) {
+    if (bullish > bearish) {
+      direction = 'BULLISH';
+    } else if (bearish > bullish) {
+      direction = 'BEARISH';
+    } else {
+      direction = 'MIXED';
+    }
+  }
+
+  return {
+    name: group.name,
+    total: matched.length,
+    bullish,
+    bearish,
+    direction
+  };
+});
+
+const activeEvents = eventResults.filter(event =>
+  event.total > 0
+);
+
+const eventHTML = activeEvents.map(event => `
+  <div class="event-cluster">
+    <p><b>${event.name}</b></p>
+    <p>ARTICLES: ${event.total}</p>
+    <p>BULLISH: ${event.bullish} | BEARISH: ${event.bearish}</p>
+    <p>EVENT DIRECTION: ${event.direction}</p>
+  </div>
+`).join('');
+
 correlationBox.innerHTML = `
   <h3>📊 ADVANCED NEWS CORRELATION</h3>
 
   <p><b>MARKET CONSENSUS:</b> ${correlationStatus}</p>
-
   <p><b>BULLISH WEIGHT:</b> ${bullishPercentage}%</p>
-
   <p><b>BEARISH WEIGHT:</b> ${bearishPercentage}%</p>
-
   <p><b>CONFIDENCE:</b> ${confidence}</p>
-
   <p><b>UNIQUE HEADLINES:</b> ${uniqueArticles.length}</p>
-
   <p><b>DUPLICATES REMOVED:</b> ${articles.length - uniqueArticles.length}</p>
-
   <p><b>ANALYZED SOURCES:</b> ${uniqueSources.size}</p>
-
   <p><b>CONFLICT DETECTION:</b> ${conflictDetected ? 'DETECTED' : 'NOT DETECTED'}</p>
 
+  <hr>
+
+  <h3>🌐 NEWS EVENT CLUSTERING</h3>
+
+  ${eventHTML || '<p>No relevant economic events detected.</p>'}
+
   <small>
-    HEADLINE-BASED WEIGHTED ANALYSIS • NOT A TRADE SIGNAL
+    HEADLINE-BASED EVENT CLASSIFICATION • NOT A TRADE SIGNAL
   </small>
 `;
 
