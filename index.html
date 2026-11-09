@@ -480,7 +480,55 @@ if (module === 'news') {
           <div class="ai-analysis-result"></div>
         </div>
       `).join('');
+// ==================================
+// HAZZ NEWS CORRELATION INTELLIGENCE
+// ==================================
 
+const correlationBox = document.createElement('div');
+correlationBox.className = 'ai-analysis-panel';
+
+const analyzedArticles = articles.filter(article =>
+  ['BULLISH', 'BEARISH'].includes(
+    String(article.sentiment || '').toUpperCase()
+  )
+);
+
+const uniqueSources = new Set(
+  analyzedArticles.map(article =>
+    String(article.source || '').toLowerCase().trim()
+  )
+);
+
+const bullishCount = analyzedArticles.filter(article =>
+  String(article.sentiment).toUpperCase() === 'BULLISH'
+).length;
+
+const bearishCount = analyzedArticles.filter(article =>
+  String(article.sentiment).toUpperCase() === 'BEARISH'
+).length;
+
+let correlationStatus = 'INSUFFICIENT DATA';
+
+if (uniqueSources.size >= 3 && analyzedArticles.length >= 5) {
+  if (bullishCount / analyzedArticles.length >= 0.7) {
+    correlationStatus = 'BULLISH CONSENSUS';
+  } else if (bearishCount / analyzedArticles.length >= 0.7) {
+    correlationStatus = 'BEARISH CONSENSUS';
+  } else {
+    correlationStatus = 'MIXED SIGNALS';
+  }
+}
+
+correlationBox.innerHTML = `
+  <h3>📊 NEWS CORRELATION INTELLIGENCE</h3>
+  <p><b>MARKET CONSENSUS:</b> ${correlationStatus}</p>
+  <p><b>BULLISH ARTICLES:</b> ${bullishCount}</p>
+  <p><b>BEARISH ARTICLES:</b> ${bearishCount}</p>
+  <p><b>UNIQUE SOURCES:</b> ${uniqueSources.size}</p>
+  <small>HEADLINE-BASED AGGREGATION • NOT A TRADE SIGNAL</small>
+`;
+
+feed.prepend(correlationBox);
       
 feed.querySelectorAll('.ai-analyze-button').forEach(button => {
   button.addEventListener('click', () => {
