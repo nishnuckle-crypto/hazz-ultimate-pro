@@ -1891,13 +1891,16 @@ const atrPeriod = 14;
 let atrTotal = 0;
 
 for (let i = 1; i <= atrPeriod; i++) {
-  const candle = m15.candles[i];
-  const previousClose = m15.candles[i + 1].close;
+  const atrCandle = market.M15[i];
+  const previousClose = Number(market.M15[i + 1].close);
+
+  const atrHigh = Number(atrCandle.high);
+  const atrLow = Number(atrCandle.low);
 
   const trueRange = Math.max(
-    candle.high - candle.low,
-    Math.abs(candle.high - previousClose),
-    Math.abs(candle.low - previousClose)
+    atrHigh - atrLow,
+    Math.abs(atrHigh - previousClose),
+    Math.abs(atrLow - previousClose)
   );
 
   atrTotal += trueRange;
@@ -1912,9 +1915,16 @@ if (range < atr * 0.5) {
 } else if (range > atr * 2) {
   volatilityStatus = 'HIGH';
 }
+
 if (signal !== 'WAIT' && volatilityStatus === 'LOW') {
   signal = 'WAIT';
   reason = 'LOW VOLATILITY • ENTRY BLOCKED';
+  safetyStatus = 'BLOCKED';
+} 
+
+else if (signal !== 'WAIT' && volatilityStatus === 'HIGH') {
+  signal = 'WAIT';
+  reason = 'EXTREME VOLATILITY • ENTRY BLOCKED';
   safetyStatus = 'BLOCKED';
 }
 
