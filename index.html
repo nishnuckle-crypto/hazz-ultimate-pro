@@ -2015,22 +2015,31 @@ if (module === 'status') {
   candle.datetime.replace(' ', 'T') + '+08:00'
 );
 
-const ageMinutes = Math.max(
-  0,
-  Math.floor((Date.now() - candleTime.getTime()) / 60000)
+const rawAgeMinutes = Math.floor(
+  (Date.now() - candleTime.getTime()) / 60000
 );
+
+const ageMinutes = Math.abs(rawAgeMinutes);
+
+const timeValid = rawAgeMinutes >= 0;
+
+const freshness = !timeValid
+  ? 'TIME OFFSET'
+  : ageMinutes <= ({
+      M15: 20,
+      M30: 40,
+      H1: 75,
+      H4: 270
+    }[tf])
+    ? 'FRESH'
+    : 'STALE';
 
 return {
   timeframe: tf,
   online: true,
   datetime: candle.datetime,
   ageMinutes: ageMinutes,
-  freshness: ageMinutes <= ({
-  M15: 20,
-  M30: 40,
-  H1: 75,
-  H4: 270
-}[tf]) ? 'FRESH' : 'STALE'
+  freshness: freshness
 };
 
         } catch (error) {
