@@ -1832,7 +1832,17 @@ names.forEach((tf, index) => {
       
       const confirmationScore =
         Math.max(bullishCount, bearishCount) * 25;
+let signalStrength = 'NO DIRECTION';
 
+if (confirmationScore === 100) {
+  signalStrength = 'VERY STRONG';
+} else if (confirmationScore === 75) {
+  signalStrength = 'STRONG';
+} else if (confirmationScore === 50) {
+  signalStrength = 'MODERATE';
+} else if (confirmationScore === 25) {
+  signalStrength = 'WEAK';
+}
 let signal = 'WAIT';
 let reason = 'WAITING FOR MARKET CONFIRMATION';
 let safetyStatus = 'WAIT';
@@ -1922,7 +1932,10 @@ else {
             <span class="result-label">SIGNAL CONFIRMATION SCORE</span>
             <span class="result-value">${confirmationScore}%</span>
             </div>
-            
+            <div class="result-row">
+            <span class="result-label">SIGNAL STRENGTH</span>
+            <span class="result-value">${signalStrength}</span>
+            </div>
             <p>${reason}</p>
 
           <div class="result-row">
