@@ -1831,17 +1831,35 @@ names.forEach((tf, index) => {
       const bearishBreakout = close < previousLow;
 
       let signal = 'WAIT';
-      let reason = 'No confirmed breakout with full timeframe alignment.';
+let reason = 'WAITING FOR MARKET CONFIRMATION';
+let safetyStatus = 'WAIT';
 
-      if (bullishCount === 4 && bullishBreakout) {
-        signal = 'BUY';
-        reason = 'Four-timeframe bullish alignment with confirmed M15 breakout.';
-      }
+if (bullishCount > 0 && bearishCount > 0) {
+  reason = 'TIMEFRAME CONFLICT • MARKET DIRECTIONS NOT ALIGNED';
+  safetyStatus = 'BLOCKED';
+}
 
-      if (bearishCount === 4 && bearishBreakout) {
-        signal = 'SELL';
-        reason = 'Four-timeframe bearish alignment with confirmed M15 breakout.';
-      }
+else if (bullishCount === 4 && !bullishBreakout) {
+  reason = 'WAITING FOR CONFIRMED M15 BULLISH BREAKOUT';
+  safetyStatus = 'WAITING';
+}
+
+else if (bearishCount === 4 && !bearishBreakout) {
+  reason = 'WAITING FOR CONFIRMED M15 BEARISH BREAKOUT';
+  safetyStatus = 'WAITING';
+}
+
+else if (bullishCount === 4 && bullishBreakout) {
+  signal = 'BUY';
+  reason = 'FOUR-TIMEFRAME BULLISH ALIGNMENT + M15 BREAKOUT';
+  safetyStatus = 'APPROVED';
+}
+
+else if (bearishCount === 4 && bearishBreakout) {
+  signal = 'SELL';
+  reason = 'FOUR-TIMEFRAME BEARISH ALIGNMENT + M15 BREAKOUT';
+  safetyStatus = 'APPROVED';
+}
 
       const entry = close;
       const range = Math.max(high - low, 0.01);
@@ -1880,6 +1898,11 @@ names.forEach((tf, index) => {
 
           <div class="pattern-box">
             ${signal}
+          </div>
+          
+          <div class="result-row">
+            <span class="result-label">SIGNAL SAFETY GATE</span>
+            <span class="result-value">${safetyStatus}</span>
           </div>
 
           <p>${reason}</p>
