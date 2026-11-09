@@ -671,16 +671,190 @@ const eventResults = eventGroups.map(group => {
   };
 });
 
+// ==================================
+// HAZZ XAUUSD EVENT IMPACT ENGINE
+// ==================================
+
 const activeEvents = eventResults.filter(event =>
   event.total > 0
 );
 
-const eventHTML = activeEvents.map(event => `
+const impactRules = {
+  'FED / INTEREST RATES': {
+    bullish: /\b(dovish|rate cut|rate cuts|cuts interest rates|monetary easing|policy easing|easier policy)\b/i,
+    bearish: /\b(hawkish|rate hike|rate hikes|raises interest rates|higher for longer|monetary tightening)\b/i
+  },
+
+  'INFLATION / CPI / PCE': {
+    bullish: /\b(cooling inflation|inflation cools|inflation eases|softer inflation|disinflation|lower than expected inflation|inflation declines)\b/i,
+    bearish: /\b(hotter inflation|inflation rises|sticky inflation|inflation stays elevated|higher than expected inflation|inflation runs hot)\b/i
+  },
+
+  'EMPLOYMENT / NFP': {
+    bullish: /\b(weak jobs|jobs miss|payrolls miss|unemployment rises|job losses|weak hiring|labor market weakens|labour market weakens)\b/i,
+    bearish: /\b(strong jobs|jobs beat|payrolls beat|unemployment falls|strong hiring|labor market strengthens|labour market strengthens)\b/i
+  },
+
+  'GDP / ECONOMIC GROWTH': {
+    bullish: /\b(recession|economic contraction|growth slows|economic slowdown|GDP contracts|GDP misses)\b/i,
+    bearish: /\b(strong economic growth|growth accelerates|GDP beats|economic expansion|economy strengthens)\b/i
+  },
+
+  'TREASURY YIELDS': {
+    bullish: /\b(yields fall|yield falls|yields decline|falling yields|lower treasury yields|real yields fall)\b/i,
+    bearish: /\b(yields rise|yield rises|yields climb|rising yields|higher treasury yields|real yields rise)\b/i
+  },
+
+  'GEOPOLITICAL RISK': {
+    bullish: /\b(war escalates|military conflict|armed conflict|geopolitical tensions|flight to safety|safe haven demand|sanctions intensify)\b/i,
+    bearish: /\b(ceasefire|peace deal|de-escalation|tensions ease|conflict eases|peace talks progress)\b/i
+  },
+
+  'GOLD MARKET': {
+    bullish: null,
+    bearish: null
+  }
+};
+
+// Positive score = potentially bullish for gold.
+// Negative score = potentially bearish for gold.
+
+const impactWeights = {
+  'FED / INTEREST RATES': 1.3,
+  'INFLATION / CPI / PCE': 1.2,
+  'EMPLOYMENT / NFP': 1.1,
+  'GDP / ECONOMIC GROWTH': 1,
+  'TREASURY YIELDS': 1.1,
+  'GEOPOLITICAL RISK': 1,
+  'GOLD MARKET': 0.8
+};
+
+const impactResults = eventGroups.map(group => {
+  const matched = uniqueArticles.filter(article =>
+    group.keywords.test(String(article.title || ''))
+  );
+
+  let bullish = 0;
+  let bearish = 0;
+  let neutral = 0;
+
+  matched.forEach(article => {
+    const title = String(article.title || '');
+    const rules = impactRules[group.name];
+
+    let isBullish = false;
+    let isBearish = false;
+
+    if (group.name === 'GOLD MARKET') {
+      const sentiment = String(article.sentiment || '').toUpperCase();
+
+      isBullish = sentiment === 'BULLISH';
+      isBearish = sentiment === 'BEARISH';
+    } else if (rules) {
+      isBullish = rules.bullish.test(title);
+      isBearish = rules.bearish.test(title);
+    }
+
+    if (isBullish && !isBearish) {
+      bullish++;
+    } else if (isBearish && !isBullish) {
+      bearish++;
+    } else {
+      neutral++;
+    }
+  });
+
+  const directionalTotal = bullish + bearish;
+
+  const score = directionalTotal
+    ? Math.round(((bullish - bearish) / directionalTotal) * 100)
+    : null;
+
+  let direction = 'INSUFFICIENT EVIDENCE';
+
+  if (score !== null) {
+    if (score >= 25) {
+      direction = 'POTENTIALLY BULLISH GOLD';
+    } else if (score <= -25) {
+      direction = 'POTENTIALLY BEARISH GOLD';
+    } else {
+      direction = 'MIXED / NEUTRAL';
+    }
+  }
+
+  return {
+    name: group.name,
+    total: matched.length,
+    bullish,
+    bearish,
+    neutral,
+    score,
+    direction,
+    weight: impactWeights[group.name] || 1
+  };
+});
+
+const activeImpactResults = impactResults.filter(event =>
+  event.total > 0
+);
+
+const scoredEvents = activeImpactResults.filter(event =>
+  event.score !== null
+);
+
+let overallScore = null;
+
+if (scoredEvents.length > 0) {
+  const weightedScore = scoredEvents.reduce(
+    (sum, event) => sum + event.score * event.weight,
+    0
+  );
+
+  const totalWeight = scoredEvents.reduce(
+    (sum, event) => sum + event.weight,
+    0
+  );
+
+  overallScore = Math.round(weightedScore / totalWeight);
+}
+
+let goldBias = 'INSUFFICIENT EVIDENCE';
+
+if (overallScore !== null) {
+  if (overallScore >= 25) {
+    goldBias = 'POTENTIALLY BULLISH';
+  } else if (overallScore <= -25) {
+    goldBias = 'POTENTIALLY BEARISH';
+  } else {
+    goldBias = 'NEUTRAL / MIXED';
+  }
+}
+
+let impactStrength = 'LOW';
+
+if (
+  scoredEvents.length >= 4 &&
+  overallScore !== null &&
+  Math.abs(overallScore) >= 65
+) {
+  impactStrength = 'HIGH';
+} else if (
+  scoredEvents.length >= 2 &&
+  overallScore !== null &&
+  Math.abs(overallScore) >= 40
+) {
+  impactStrength = 'MODERATE';
+}
+
+const impactHTML = activeImpactResults.map(event => `
   <div class="event-cluster">
     <p><b>${event.name}</b></p>
     <p>ARTICLES: ${event.total}</p>
-    <p>BULLISH: ${event.bullish} | BEARISH: ${event.bearish}</p>
-    <p>EVENT DIRECTION: ${event.direction}</p>
+    <p>BULLISH GOLD EVIDENCE: ${event.bullish}</p>
+    <p>BEARISH GOLD EVIDENCE: ${event.bearish}</p>
+    <p>NEUTRAL / UNCLASSIFIED: ${event.neutral}</p>
+    <p>GOLD IMPACT SCORE: ${event.score === null ? 'N/A' : event.score}</p>
+    <p>EVENT IMPACT: ${event.direction}</p>
   </div>
 `).join('');
 
@@ -700,10 +874,31 @@ correlationBox.innerHTML = `
 
   <h3>🌐 NEWS EVENT CLUSTERING</h3>
 
-  ${eventHTML || '<p>No relevant economic events detected.</p>'}
+  ${activeEvents.map(event => `
+    <div class="event-cluster">
+      <p><b>${event.name}</b></p>
+      <p>ARTICLES: ${event.total}</p>
+      <p>BULLISH: ${event.bullish} | BEARISH: ${event.bearish}</p>
+      <p>EVENT DIRECTION: ${event.direction}</p>
+    </div>
+  `).join('')}
+
+  <hr>
+
+  <h3>🥇 XAUUSD EVENT IMPACT SCORE</h3>
+
+  <p><b>OVERALL GOLD BIAS:</b> ${goldBias}</p>
+
+  <p><b>GOLD IMPACT SCORE:</b> ${overallScore === null ? 'N/A' : overallScore + ' / 100'}</p>
+
+  <p><b>IMPACT STRENGTH:</b> ${impactStrength}</p>
+
+  <p><b>EVENTS WITH DIRECTIONAL EVIDENCE:</b> ${scoredEvents.length}</p>
+
+  ${impactHTML || '<p>No relevant events detected.</p>'}
 
   <small>
-    HEADLINE-BASED EVENT CLASSIFICATION • NOT A TRADE SIGNAL
+    RULE-BASED MACRO IMPACT MODEL • HEADLINE EVIDENCE ONLY • NOT A TRADE SIGNAL
   </small>
 `;
 
