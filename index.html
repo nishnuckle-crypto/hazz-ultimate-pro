@@ -958,8 +958,10 @@ return;
       MANUAL DATA MODE • LIVE MARKET FEED NOT CONNECTED
     </p>
   `;
+
 document.getElementById('loadLiveMarket').addEventListener('click', async () => {
   const status = document.getElementById('liveMarketStatus');
+  const symbol = document.getElementById('analysisSymbol').value;
   const timeframe = document.getElementById('analysisTimeframe').value;
 
   const intervals = {
@@ -969,39 +971,109 @@ document.getElementById('loadLiveMarket').addEventListener('click', async () => 
     H4: '4h'
   };
 
-  if (!intervals[timeframe]) {
-    status.textContent = 'ERROR: D1 LIVE DATA NOT SUPPORTED YET';
+  if (symbol !== 'XAUUSD') {
+    status.textContent = 'LIVE FEED CURRENTLY SUPPORTS XAUUSD ONLY';
     return;
   }
 
-  status.textContent = 'CONNECTING TO LIVE XAUUSD...';
+  if (!intervals[timeframe]) {
+    status.textContent = 'D1 LIVE DATA NOT SUPPORTED YET';
+    return;
+  }
+
+  status.textContent = 'LOADING FOUR TIMEFRAMES...';
 
   try {
-    const response = await fetch(
-      `/api/market?interval=${intervals[timeframe]}`
+    const names = ['M15', 'M30', 'H1', 'H4'];
+
+    const responses = await Promise.all(
+      names.map(tf =>
+        fetch('/api/market?interval=' + intervals[tf])
+      )
     );
 
-    const data = await response.json();
+    const datasets = await Promise.all(
+      responses.map(async response => {
+        if (!response.ok) {
+          throw new Error('API HTTP ' + response.status);
+        }
 
-    if (!data.success || !data.candles || data.candles.length < 4) {
-      throw new Error(data.message || 'Market data unavailable');
+        const data = await response.json();
+
+        if (!data.success || !data.candles || data.candles.length < 21) {
+          throw new Error('Insufficient market candles');
+        }
+
+        return data.candles;
+      })
+    );
+
+    const market = {};
+
+    names.forEach((tf, index) => {
+      market[tf] = datasets[index];
+    });
+
+    const selected = market[timeframe];
+
+    const current = selected[1];
+    const previous = selected[2];
+    const third = selected[3];
+
+    function fillOHLC(prefix, candle) {
+      document.getElementById(prefix + 'Open').value = candle.open;
+      document.getElementById(prefix + 'High').value = candle.high;
+      document.getElementById(prefix + 'Low').value = candle.low;
+      document.getElementById(prefix + 'Close').value = candle.close;
     }
 
-    const candle = data.candles[1];
+    fillOHLC('candle', current);
+    fillOHLC('prev', previous);
+    fillOHLC('third', third);
 
-    document.getElementById('candleOpen').value = candle.open;
-    document.getElementById('candleHigh').value = candle.high;
-    document.getElementById('candleLow').value = candle.low;
-    document.getElementById('candleClose').value = candle.close;
+    const mtfIds = {
+      M15: 'mtfM15',
+      M30: 'mtfM30',
+      H1: 'mtfH1',
+      H4: 'mtfH4'
+    };
+
+    names.forEach(tf => {
+      const candle = market[tf][1];
+      const prefix = mtfIds[tf];
+
+      document.getElementById(prefix + 'Open').value = candle.open;
+      document.getElementById(prefix + 'Close').value = candle.close;
+    });
+
+    const history = selected;
+
+    const previousGroup = history.slice(11, 21);
+    const latestGroup = history.slice(1, 11);
+
+    document.getElementById('previousSwingHigh').value =
+      Math.max(...previousGroup.map(c => Number(c.high)));
+
+    document.getElementById('previousSwingLow').value =
+      Math.min(...previousGroup.map(c => Number(c.low)));
+
+    document.getElementById('latestSwingHigh').value =
+      Math.max(...latestGroup.map(c => Number(c.high)));
+
+    document.getElementById('latestSwingLow').value =
+      Math.min(...latestGroup.map(c => Number(c.low)));
 
     status.textContent =
-      'CONNECTED ✓ XAUUSD ' + timeframe +
-      ' | Confirmed candle: ' + candle.datetime;
+      'CONNECTED ✓ XAUUSD | ' + timeframe +
+      ' | M15 M30 H1 H4 LOADED | ' + current.datetime;
+
+    document.getElementById('calculateCandle').click();
 
   } catch (error) {
     status.textContent = 'LIVE DATA ERROR: ' + error.message;
   }
 });
+
   document.getElementById('calculateCandle')
     .addEventListener('click', () => {
 
