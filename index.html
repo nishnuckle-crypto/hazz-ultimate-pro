@@ -1921,96 +1921,171 @@ result.innerHTML = `
 if (module === 'status') {
   content.innerHTML = `
     <h3>🟢 LIVE MARKET STATUS</h3>
-    <p id="marketConnection">CHECKING CONNECTION...</p>
-    <div id="marketStatusDetails"></div>
+    <p>HAZZ ULTIMATE PRO • SYSTEM MONITOR</p>
+
+    <div class="technical-result">
+      <h4>MARKET CONNECTION</h4>
+      <h2 id="overallStatus">CHECKING...</h2>
+      <p id="lastChecked">Waiting for API response...</p>
+      <p id="refreshCountdown">NEXT CHECK: 60s</p>
+    </div>
+
+    <div class="technical-result">
+      <h4>TIMEFRAME HEALTH</h4>
+      <div id="timeframeHealth"></div>
+    </div>
+
+    <div class="technical-result">
+      <h4>SYSTEM INFORMATION</h4>
+      <div class="result-row">
+        <span class="result-label">PROVIDER</span>
+        <span class="result-value">TWELVE DATA</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">SYMBOL</span>
+        <span class="result-value">XAUUSD</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">AUTO REFRESH</span>
+        <span class="result-value">60 SECONDS</span>
+      </div>
+    </div>
+
+    <button id="refreshMarketStatus">REFRESH NOW</button>
   `;
 
-  async function checkMarketStatus() {
-    const status = document.getElementById('marketConnection');
-    const details = document.getElementById('marketStatusDetails');
+  const frames = {
+    M15: '15min',
+    M30: '30min',
+    H1: '1h',
+    H4: '4h'
+  };
 
-    if (!status || !details) return;
+  let countdown = 60;
+  let checking = false;
 
-    status.textContent = 'CHECKING TWELVE DATA...';
+  const health = document.getElementById('timeframeHealth');
+  const overall = document.getElementById('overallStatus');
+  const lastChecked = document.getElementById('lastChecked');
+  const countdownDisplay = document.getElementById('refreshCountdown');
 
-    try {
-      const frames = {
-        M15: '15min',
-        M30: '30min',
-        H1: '1h',
-        H4: '4h'
-      };
+  async function checkMarketHealth() {
+    if (checking) return;
 
-      const results = await Promise.all(
-        Object.entries(frames).map(async ([tf, interval]) => {
+    checking = true;
+    overall.textContent = 'CHECKING...';
+
+    const results = await Promise.all(
+      Object.entries(frames).map(async ([tf, interval]) => {
+        try {
           const response = await fetch(
             '/api/market?interval=' + interval
           );
 
           if (!response.ok) {
-            throw new Error(tf + ' HTTP ' + response.status);
+            throw new Error('HTTP ' + response.status);
           }
 
           const data = await response.json();
 
-          if (!data.success || !data.candles?.length) {
-            throw new Error(tf + ' DATA UNAVAILABLE');
+          if (
+            !data.success ||
+            !Array.isArray(data.candles) ||
+            data.candles.length < 3
+          ) {
+            throw new Error('Invalid market data');
+          }
+
+          const candle = data.candles[0];
+
+          const validPrices = [
+            candle.open,
+            candle.high,
+            candle.low,
+            candle.close
+          ].every(value =>
+            Number.isFinite(Number(value))
+          );
+
+          if (!validPrices) {
+            throw new Error('Invalid candle prices');
           }
 
           return {
             timeframe: tf,
-            datetime: data.candles[0].datetime
+            online: true,
+            datetime: candle.datetime
           };
-        })
-      );
 
-      status.textContent = '🟢 MARKET API CONNECTED';
+        } catch (error) {
+          return {
+            timeframe: tf,
+            online: false,
+            datetime: error.message
+          };
+        }
+      })
+    );
 
-      details.innerHTML = `
-        <div class="technical-result">
-          <h4>MARKET CONNECTION STATUS</h4>
+    health.innerHTML = results.map(item => `
+      <div class="result-row">
+        <span class="result-label">${item.timeframe}</span>
+        <span class="result-value">
+          ${item.online ? '🟢 ONLINE' : '🔴 ERROR'}
+        </span>
+      </div>
 
-          <div class="result-row">
-            <span class="result-label">PROVIDER</span>
-            <span class="result-value">TWELVE DATA</span>
-          </div>
+      <div class="result-row">
+        <span class="result-label">
+          ${item.online ? 'LATEST CANDLE' : 'ERROR'}
+        </span>
+        <span class="result-value">${item.datetime}</span>
+      </div>
+    `).join('');
 
-          <div class="result-row">
-            <span class="result-label">SYMBOL</span>
-            <span class="result-value">XAUUSD</span>
-          </div>
+    const onlineCount = results.filter(
+      item => item.online
+    ).length;
 
-          ${results.map(item => `
-            <div class="result-row">
-              <span class="result-label">${item.timeframe}</span>
-              <span class="result-value">${item.datetime}</span>
-            </div>
-          `).join('')}
+    overall.textContent =
+      onlineCount === 4
+        ? '🟢 ALL SYSTEMS ONLINE'
+        : '🟠 PARTIAL CONNECTION';
 
-          <p class="result-note">
-            API CONNECTION VERIFIED •
-            CHECKED ${new Date().toLocaleTimeString()}
-          </p>
-        </div>
-      `;
+    lastChecked.textContent =
+      'LAST CHECKED: ' + new Date().toLocaleTimeString();
 
-    } catch (error) {
-      status.textContent = '🔴 MARKET CONNECTION ERROR';
-
-      details.textContent = error.message;
-    }
+    checking = false;
   }
+
+  document.getElementById('refreshMarketStatus').onclick = async () => {
+    countdown = 60;
+    await checkMarketHealth();
+  };
 
   if (window.marketStatusTimer) {
     clearInterval(window.marketStatusTimer);
   }
 
-  checkMarketStatus();
+  if (window.marketCountdownTimer) {
+    clearInterval(window.marketCountdownTimer);
+  }
 
-  window.marketStatusTimer = setInterval(
-    checkMarketStatus,
-    60000
-  );
+  checkMarketHealth();
+
+  window.marketStatusTimer = setInterval(() => {
+    checkMarketHealth();
+    countdown = 60;
+  }, 60000);
+
+  window.marketCountdownTimer = setInterval(() => {
+    countdown = Math.max(0, countdown - 1);
+
+    if (countdownDisplay) {
+      countdownDisplay.textContent =
+        'NEXT CHECK: ' + countdown + 's';
+    }
+  }, 1000);
 
   return;
 }
