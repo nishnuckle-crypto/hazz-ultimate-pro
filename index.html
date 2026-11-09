@@ -1829,8 +1829,11 @@ names.forEach((tf, index) => {
 
       const bullishBreakout = close > previousHigh;
       const bearishBreakout = close < previousLow;
+      
+      const confirmationScore =
+        Math.max(bullishCount, bearishCount) * 25;
 
-      let signal = 'WAIT';
+let signal = 'WAIT';
 let reason = 'WAITING FOR MARKET CONFIRMATION';
 let safetyStatus = 'WAIT';
 
