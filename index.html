@@ -1839,6 +1839,11 @@ if (bullishCount > 0 && bearishCount > 0) {
   safetyStatus = 'BLOCKED';
 }
 
+else if (bullishCount === 0 && bearishCount === 0) {
+  reason = 'NO CLEAR MARKET DIRECTION';
+  safetyStatus = 'WAITING';
+}
+
 else if (bullishCount === 4 && !bullishBreakout) {
   reason = 'WAITING FOR CONFIRMED M15 BULLISH BREAKOUT';
   safetyStatus = 'WAITING';
@@ -1859,6 +1864,11 @@ else if (bearishCount === 4 && bearishBreakout) {
   signal = 'SELL';
   reason = 'FOUR-TIMEFRAME BEARISH ALIGNMENT + M15 BREAKOUT';
   safetyStatus = 'APPROVED';
+}
+
+else {
+  reason = 'WAITING FOR FULL FOUR-TIMEFRAME ALIGNMENT';
+  safetyStatus = 'WAITING';
 }
 
       const entry = close;
