@@ -681,40 +681,34 @@ const activeEvents = eventResults.filter(event =>
 
 const impactRules = {
   'FED / INTEREST RATES': {
-    bullish: /\b(dovish|rate cut|rate cuts|cuts interest rates|monetary easing|policy easing|easier policy)\b/i,
-    bearish: /\b(hawkish|rate hike|rate hikes|raises interest rates|higher for longer|monetary tightening)\b/i
+    bullish: /\b(dovish|rate cut|rate cuts|cuts interest rates|monetary easing|policy easing|easier policy|interest rate reduction|lower borrowing costs|fed signals cuts|fed expected to cut)\b/i,
+    bearish: /\b(hawkish|rate hike|rate hikes|raises interest rates|higher for longer|monetary tightening|interest rate increase|higher borrowing costs|fed signals hikes|fed holds rates high)\b/i
   },
-
   'INFLATION / CPI / PCE': {
-    bullish: /\b(cooling inflation|inflation cools|inflation eases|softer inflation|disinflation|lower than expected inflation|inflation declines)\b/i,
-    bearish: /\b(hotter inflation|inflation rises|sticky inflation|inflation stays elevated|higher than expected inflation|inflation runs hot)\b/i
+    bullish: /\b(cooling inflation|inflation cools|inflation eases|softer inflation|disinflation|lower than expected inflation|inflation declines|inflation slows|consumer prices cool|price pressures ease|CPI falls|PCE falls|core inflation slows|inflation below expectations)\b/i,
+    bearish: /\b(hotter inflation|inflation rises|sticky inflation|inflation stays elevated|higher than expected inflation|inflation runs hot|inflation accelerates|consumer prices rise|price pressures increase|CPI rises|PCE rises|core inflation climbs|inflation above expectations)\b/i
   },
-
   'EMPLOYMENT / NFP': {
-    bullish: /\b(weak jobs|jobs miss|payrolls miss|unemployment rises|job losses|weak hiring|labor market weakens|labour market weakens)\b/i,
-    bearish: /\b(strong jobs|jobs beat|payrolls beat|unemployment falls|strong hiring|labor market strengthens|labour market strengthens)\b/i
+    bullish: /\b(weak jobs|jobs miss|payrolls miss|unemployment rises|job losses|weak hiring|labor market weakens|labour market weakens|employment declines|fewer jobs|hiring slows|nonfarm payrolls fall|non-farm payrolls fall|jobless claims rise|layoffs increase|employment below expectations)\b/i,
+    bearish: /\b(strong jobs|jobs beat|payrolls beat|unemployment falls|strong hiring|labor market strengthens|labour market strengthens|employment increases|more jobs|hiring accelerates|nonfarm payrolls rise|non-farm payrolls rise|jobless claims fall|employment above expectations)\b/i
   },
-
   'GDP / ECONOMIC GROWTH': {
-    bullish: /\b(recession|economic contraction|growth slows|economic slowdown|GDP contracts|GDP misses)\b/i,
-    bearish: /\b(strong economic growth|growth accelerates|GDP beats|economic expansion|economy strengthens)\b/i
+    bullish: /\b(recession|economic contraction|growth slows|economic slowdown|GDP contracts|GDP misses|growth below expectations|economy weakens|economic activity slows|business activity declines)\b/i,
+    bearish: /\b(strong economic growth|growth accelerates|GDP beats|economic expansion|economy strengthens|growth above expectations|economic activity expands|business activity improves)\b/i
   },
-
   'TREASURY YIELDS': {
-    bullish: /\b(yields fall|yield falls|yields decline|falling yields|lower treasury yields|real yields fall)\b/i,
-    bearish: /\b(yields rise|yield rises|yields climb|rising yields|higher treasury yields|real yields rise)\b/i
+    bullish: /\b(yields fall|yield falls|yields decline|falling yields|lower treasury yields|real yields fall|bond yields retreat|treasury yields drop|yields slide|real rates fall)\b/i,
+    bearish: /\b(yields rise|yield rises|yields climb|rising yields|higher treasury yields|real yields rise|bond yields advance|treasury yields jump|yields surge|real rates rise)\b/i
   },
-
   'GEOPOLITICAL RISK': {
-    bullish: /\b(war escalates|military conflict|armed conflict|geopolitical tensions|flight to safety|safe haven demand|sanctions intensify)\b/i,
-    bearish: /\b(ceasefire|peace deal|de-escalation|tensions ease|conflict eases|peace talks progress)\b/i
+    bullish: /\b(war escalates|military conflict|armed conflict|geopolitical tensions|flight to safety|safe haven demand|sanctions intensify|military escalation|attack intensifies|regional tensions rise)\b/i,
+    bearish: /\b(ceasefire|peace deal|de-escalation|tensions ease|conflict eases|peace talks progress|diplomatic breakthrough|military tensions ease|peace agreement)\b/i
   },
-
   'GOLD MARKET': {
     bullish: null,
     bearish: null
   }
-};
+};```
 
 // Positive score = potentially bullish for gold.
 // Negative score = potentially bearish for gold.
