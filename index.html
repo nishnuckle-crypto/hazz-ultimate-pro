@@ -1976,13 +1976,34 @@ ${names.map(tf => `
         new Date().toLocaleTimeString();
 
     } catch (error) {
-      status.textContent = 'SIGNAL ERROR: ' + error.message;
-    }
+  const errorMessage = error.message || 'UNKNOWN ERROR';
 
-    button.disabled = false;
-  };
+  let gateStatus = 'API ERROR';
 
-  return;
+  if (errorMessage.includes('DATA NOT FRESH')) {
+    gateStatus = 'STALE DATA';
+  }
+
+  status.textContent =
+    'SIGNAL ERROR: ' + errorMessage;
+
+  const result = document.getElementById('signalResult');
+
+  if (result) {
+    result.innerHTML = `
+      <div class="pattern-box">WAIT</div>
+
+      <div class="result-row">
+        <span class="result-label">SIGNAL SAFETY GATE</span>
+        <span class="result-value">${gateStatus}</span>
+      </div>
+
+      <div class="result-row">
+        <span class="result-label">REASON</span>
+        <span class="result-value">${errorMessage}</span>
+      </div>
+    `;
+  }
 }
 
 if (module === 'status') {
