@@ -663,7 +663,13 @@ if (
 if (sentiment === 'NEUTRAL') {
   riskNote = 'Directional evidence is insufficient or mixed. Do not treat this headline as a trading signal.';
 }
+// FINAL RSS IMPORTANCE OVERRIDE
+const finalRssImpact = String(article.impact || '').toUpperCase();
 
+if (['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].includes(finalRssImpact)) {
+  importance = finalRssImpact;
+}
+    
 // DISPLAY RESULT
 resultBox.innerHTML = `
   <div class="ai-analysis-panel">
