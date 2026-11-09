@@ -1132,6 +1132,33 @@ return;
         marketBias = intelligence.bias;
         patternStrength = intelligence.strength;
       }
+            // CANDLE CONFIRMATION ANALYSIS
+
+      const buyingPressure = range > 0
+        ? (c - l) / range * 100
+        : 0;
+
+      const sellingPressure = range > 0
+        ? (h - c) / range * 100
+        : 0;
+
+      const upperWickRejection = upperWick > body
+        ? 'STRONG'
+        : upperWick > 0
+          ? 'MODERATE'
+          : 'NONE';
+
+      const lowerWickRejection = lowerWick > body
+        ? 'STRONG'
+        : lowerWick > 0
+          ? 'MODERATE'
+          : 'NONE';
+
+      const candleMomentum = bodyPercent >= 70
+        ? 'STRONG'
+        : bodyPercent >= 40
+          ? 'MODERATE'
+          : 'WEAK';
       const direction = c > o ? 'BULLISH CANDLE'
         : c < o ? 'BEARISH CANDLE'
         : 'NEUTRAL CANDLE';
@@ -1192,6 +1219,30 @@ result.innerHTML = `
     </div>
     <div class="result-row">
       <span class="result-label">BODY STRENGTH</span>
+          <div class="result-row">
+      <span class="result-label">BUYING PRESSURE</span>
+      <span class="result-value">${buyingPressure.toFixed(2)}%</span>
+    </div>
+
+    <div class="result-row">
+      <span class="result-label">SELLING PRESSURE</span>
+      <span class="result-value">${sellingPressure.toFixed(2)}%</span>
+    </div>
+
+    <div class="result-row">
+      <span class="result-label">UPPER WICK REJECTION</span>
+      <span class="result-value">${upperWickRejection}</span>
+    </div>
+
+    <div class="result-row">
+      <span class="result-label">LOWER WICK REJECTION</span>
+      <span class="result-value">${lowerWickRejection}</span>
+    </div>
+
+    <div class="result-row">
+      <span class="result-label">CANDLE MOMENTUM</span>
+      <span class="result-value">${candleMomentum}</span>
+    </div>
       <span class="result-value">${bodyPercent.toFixed(2)}%</span>
     </div>
     <div class="result-row">
