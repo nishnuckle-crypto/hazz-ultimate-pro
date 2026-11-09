@@ -1714,6 +1714,14 @@ result.innerHTML = `
 
     <p id="signalStatus">WAITING FOR MARKET DATA...</p>
     <div id="signalResult"></div>
+    <div class="technical-result">
+  <h4>AUTO SIGNAL MONITOR</h4>
+  <div class="result-row">
+    <span class="result-label">TRADE STATUS</span>
+    <span class="result-value" id="tradeMonitorStatus">NO ACTIVE TRADE</span>
+  </div>
+  <div id="tradeMonitorDetails"></div>
+</div>
   `;
 
   document.getElementById('generateSignal').onclick = async () => {
