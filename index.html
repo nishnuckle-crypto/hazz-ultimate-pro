@@ -1159,6 +1159,26 @@ return;
         : bodyPercent >= 40
           ? 'MODERATE'
           : 'WEAK';
+      // MULTI-CANDLE TREND CONFIRMATION
+
+const bullishCandles =
+  [prevOpen, candleOpen, thirdOpen].filter((open, i) => {
+    const close = [prevClose, candleClose, thirdClose][i];
+    return close > open;
+  }).length;
+
+const bearishCandles =
+  [prevOpen, candleOpen, thirdOpen].filter((open, i) => {
+    const close = [prevClose, candleClose, thirdClose][i];
+    return close < open;
+  }).length;
+
+const multiCandleConfirmation =
+  bullishCandles === 3
+    ? 'BULLISH CONFIRMATION'
+    : bearishCandles === 3
+      ? 'BEARISH CONFIRMATION'
+      : 'MIXED / NO CONFIRMATION';
       const direction = c > o ? 'BULLISH CANDLE'
         : c < o ? 'BEARISH CANDLE'
         : 'NEUTRAL CANDLE';
@@ -1246,7 +1266,10 @@ result.innerHTML = `
       <span class="result-label">CANDLE MOMENTUM</span>
       <span class="result-value">${candleMomentum}</span>
     </div>
-    
+    <div class="result-row">
+  <span class="result-label">MULTI-CANDLE CONFIRMATION</span>
+  <span class="result-value">${multiCandleConfirmation}</span>
+</div>
     <div class="result-row">
       <span class="result-label">OPEN</span>
       <span class="result-value">${o}</span>
