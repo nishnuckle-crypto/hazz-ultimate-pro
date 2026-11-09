@@ -1703,11 +1703,323 @@ result.innerHTML = `
   return;
 }
 
+  if (module === 'signals') {
   content.innerHTML = `
-    <h3>${selected[0]}</h3>
-    <p>${selected[1]}</p>
-    <p>MODULE INITIALIZING...</p>
+    <h3>📈 AI SIGNAL ENGINE</h3>
+    <p>LIVE XAUUSD SIGNAL GENERATOR</p>
+
+    <button id="generateSignal" class="ai-analyze-button">
+      GENERATE LIVE SIGNAL
+    </button>
+
+    <p id="signalStatus">WAITING FOR MARKET DATA...</p>
+    <div id="signalResult"></div>
   `;
+
+  document.getElementById('generateSignal').onclick = async () => {
+    const button = document.getElementById('generateSignal');
+    const status = document.getElementById('signalStatus');
+    const result = document.getElementById('signalResult');
+
+    button.disabled = true;
+    status.textContent = 'ANALYZING FOUR TIMEFRAMES...';
+
+    try {
+      const frames = {
+        M15: '15min',
+        M30: '30min',
+        H1: '1h',
+        H4: '4h'
+      };
+
+      const names = Object.keys(frames);
+
+      const responses = await Promise.all(
+        names.map(tf =>
+          fetch('/api/market?interval=' + frames[tf])
+        )
+      );
+
+      const datasets = await Promise.all(
+        responses.map(async response => {
+          if (!response.ok) {
+            throw new Error('API HTTP ' + response.status);
+          }
+
+          const data = await response.json();
+
+          if (!data.success || !data.candles || data.candles.length < 22) {
+            throw new Error('Insufficient candle data');
+          }
+
+          return data.candles;
+        })
+      );
+
+      const market = {};
+
+      names.forEach((tf, index) => {
+        market[tf] = datasets[index];
+      });
+
+      const trend = {};
+
+      names.forEach(tf => {
+        const candle = market[tf][1];
+
+        trend[tf] =
+          Number(candle.close) > Number(candle.open)
+            ? 'BULLISH'
+            : Number(candle.close) < Number(candle.open)
+              ? 'BEARISH'
+              : 'NEUTRAL';
+      });
+
+      const selected = market.M15;
+
+      const candle = selected[1];
+      const previous = selected[2];
+
+      const high = Number(candle.high);
+      const low = Number(candle.low);
+      const close = Number(candle.close);
+
+      const previousHigh = Number(previous.high);
+      const previousLow = Number(previous.low);
+
+      const bullishCount = names.filter(
+        tf => trend[tf] === 'BULLISH'
+      ).length;
+
+      const bearishCount = names.filter(
+        tf => trend[tf] === 'BEARISH'
+      ).length;
+
+      const bullishBreakout = close > previousHigh;
+      const bearishBreakout = close < previousLow;
+
+      let signal = 'WAIT';
+      let reason = 'No confirmed breakout with full timeframe alignment.';
+
+      if (bullishCount === 4 && bullishBreakout) {
+        signal = 'BUY';
+        reason = 'Four-timeframe bullish alignment with confirmed M15 breakout.';
+      }
+
+      if (bearishCount === 4 && bearishBreakout) {
+        signal = 'SELL';
+        reason = 'Four-timeframe bearish alignment with confirmed M15 breakout.';
+      }
+
+      const entry = close;
+      const range = Math.max(high - low, 0.01);
+
+      let sl = 0;
+      let tp1 = 0;
+      let tp2 = 0;
+      let tp3 = 0;
+
+      if (signal === 'BUY') {
+        sl = low - range * 0.25;
+        const risk = entry - sl;
+        tp1 = entry + risk;
+        tp2 = entry + risk * 2;
+        tp3 = entry + risk * 3;
+      }
+
+      if (signal === 'SELL') {
+        sl = high + range * 0.25;
+        const risk = sl - entry;
+        tp1 = entry - risk;
+        tp2 = entry - risk * 2;
+        tp3 = entry - risk * 3;
+      }
+
+      const grade =
+        signal === 'WAIT'
+          ? 'NO GRADE'
+          : 'A';
+
+      const format = value => Number(value).toFixed(3);
+
+      result.innerHTML = `
+        <div class="technical-result">
+          <h4>LIVE SIGNAL RESULT</h4>
+
+          <div class="pattern-box">
+            ${signal}
+          </div>
+
+          <p>${reason}</p>
+
+          <div class="result-row">
+            <span class="result-label">SYMBOL</span>
+            <span class="result-value">XAUUSD</span>
+          </div>
+
+          <div class="result-row">
+            <span class="result-label">SIGNAL GRADE</span>
+            <span class="result-value">${grade}</span>
+          </div>
+
+          ${names.map(tf => `
+            <div class="result-row">
+              <span class="result-label">${tf} TREND</span>
+              <span class="result-value">${trend[tf]}</span>
+            </div>
+          `).join('')}
+
+          ${signal !== 'WAIT' ? `
+            <div class="result-row">
+              <span class="result-label">ENTRY</span>
+              <span class="result-value">${format(entry)}</span>
+            </div>
+
+            <div class="result-row">
+              <span class="result-label">STOP LOSS</span>
+              <span class="result-value">${format(sl)}</span>
+            </div>
+
+            <div class="result-row">
+              <span class="result-label">TAKE PROFIT 1</span>
+              <span class="result-value">${format(tp1)}</span>
+            </div>
+
+            <div class="result-row">
+              <span class="result-label">TAKE PROFIT 2</span>
+              <span class="result-value">${format(tp2)}</span>
+            </div>
+
+            <div class="result-row">
+              <span class="result-label">TAKE PROFIT 3</span>
+              <span class="result-value">${format(tp3)}</span>
+            </div>
+          ` : ''}
+
+          <p class="result-note">
+            RULE-BASED SIGNAL ENGINE. Uses confirmed M15 candle data,
+            four timeframe candle direction and previous-candle breakout.
+            Signals are not guaranteed. Verify spread, execution and risk.
+          </p>
+        </div>
+      `;
+
+      status.textContent =
+        'DATA CONNECTED • UPDATED ' +
+        new Date().toLocaleTimeString();
+
+    } catch (error) {
+      status.textContent = 'SIGNAL ERROR: ' + error.message;
+    }
+
+    button.disabled = false;
+  };
+
+  return;
+}
+
+if (module === 'status') {
+  content.innerHTML = `
+    <h3>🟢 LIVE MARKET STATUS</h3>
+    <p id="marketConnection">CHECKING CONNECTION...</p>
+    <div id="marketStatusDetails"></div>
+  `;
+
+  async function checkMarketStatus() {
+    const status = document.getElementById('marketConnection');
+    const details = document.getElementById('marketStatusDetails');
+
+    if (!status || !details) return;
+
+    status.textContent = 'CHECKING TWELVE DATA...';
+
+    try {
+      const frames = {
+        M15: '15min',
+        M30: '30min',
+        H1: '1h',
+        H4: '4h'
+      };
+
+      const results = await Promise.all(
+        Object.entries(frames).map(async ([tf, interval]) => {
+          const response = await fetch(
+            '/api/market?interval=' + interval
+          );
+
+          if (!response.ok) {
+            throw new Error(tf + ' HTTP ' + response.status);
+          }
+
+          const data = await response.json();
+
+          if (!data.success || !data.candles?.length) {
+            throw new Error(tf + ' DATA UNAVAILABLE');
+          }
+
+          return {
+            timeframe: tf,
+            datetime: data.candles[0].datetime
+          };
+        })
+      );
+
+      status.textContent = '🟢 MARKET API CONNECTED';
+
+      details.innerHTML = `
+        <div class="technical-result">
+          <h4>MARKET CONNECTION STATUS</h4>
+
+          <div class="result-row">
+            <span class="result-label">PROVIDER</span>
+            <span class="result-value">TWELVE DATA</span>
+          </div>
+
+          <div class="result-row">
+            <span class="result-label">SYMBOL</span>
+            <span class="result-value">XAUUSD</span>
+          </div>
+
+          ${results.map(item => `
+            <div class="result-row">
+              <span class="result-label">${item.timeframe}</span>
+              <span class="result-value">${item.datetime}</span>
+            </div>
+          `).join('')}
+
+          <p class="result-note">
+            API CONNECTION VERIFIED •
+            CHECKED ${new Date().toLocaleTimeString()}
+          </p>
+        </div>
+      `;
+
+    } catch (error) {
+      status.textContent = '🔴 MARKET CONNECTION ERROR';
+
+      details.textContent = error.message;
+    }
+  }
+
+  if (window.marketStatusTimer) {
+    clearInterval(window.marketStatusTimer);
+  }
+
+  checkMarketStatus();
+
+  window.marketStatusTimer = setInterval(
+    checkMarketStatus,
+    60000
+  );
+
+  return;
+}
+
+content.innerHTML = `
+  <h3>${selected[0]}</h3>
+  <p>${selected[1]}</p>
+  <p>MODULE INITIALIZING...</p>
+`;
 };
 document.getElementById('logoutButton').onclick = async () => {
   await supabase.auth.signOut();
