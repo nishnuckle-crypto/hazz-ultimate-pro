@@ -43,6 +43,7 @@ export default async function handler(req, res) {
 
     url.searchParams.set("symbol", "XAU/USD");
     url.searchParams.set("interval", interval);
+    url.searchParams.set("timezone", "Asia/Kuala_Lumpur");
     url.searchParams.set("outputsize", "30");
     url.searchParams.set("apikey", apiKey);
 
