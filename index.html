@@ -1778,15 +1778,21 @@ result.innerHTML = `
       throw new Error(tf + ' DATA NOT FRESH');
     }
 
-    return data.candles;
+    return {
+  candles: data.candles,
+  ageMinutes: Math.floor(ageMinutes),
+  freshness: 'FRESH'
+};
   })
 );
 
       const market = {};
+const freshness = {};
 
-      names.forEach((tf, index) => {
-        market[tf] = datasets[index];
-      });
+names.forEach((tf, index) => {
+  market[tf] = datasets[index].candles;
+  freshness[tf] = datasets[index];
+});
 
       const trend = {};
 
@@ -1894,7 +1900,19 @@ result.innerHTML = `
               <span class="result-value">${trend[tf]}</span>
             </div>
           `).join('')}
+<div class="result-row">
+  <span class="result-label">DATA FRESHNESS STATUS</span>
+  <span class="result-value">ALL FRESH</span>
+</div>
 
+${names.map(tf => `
+  <div class="result-row">
+    <span class="result-label">${tf} DATA</span>
+    <span class="result-value">
+      FRESH • ${freshness[tf].ageMinutes} MIN AGO
+    </span>
+  </div>
+`).join('')}
           ${signal !== 'WAIT' ? `
             <div class="result-row">
               <span class="result-label">ENTRY</span>
