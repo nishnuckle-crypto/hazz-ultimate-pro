@@ -2011,11 +2011,22 @@ if (module === 'status') {
             throw new Error('Invalid candle prices');
           }
 
-          return {
-            timeframe: tf,
-            online: true,
-            datetime: candle.datetime
-          };
+          const candleTime = new Date(
+  candle.datetime.replace(' ', 'T') + '+08:00'
+);
+
+const ageMinutes = Math.max(
+  0,
+  Math.floor((Date.now() - candleTime.getTime()) / 60000)
+);
+
+return {
+  timeframe: tf,
+  online: true,
+  datetime: candle.datetime,
+  ageMinutes: ageMinutes,
+  freshness: ageMinutes <= 90 ? 'FRESH' : 'STALE'
+};
 
         } catch (error) {
           return {
@@ -2039,7 +2050,13 @@ if (module === 'status') {
         <span class="result-label">
           ${item.online ? 'LATEST CANDLE' : 'ERROR'}
         </span>
-        <span class="result-value">${item.datetime}</span>
+        <span class="result-value">
+  ${item.datetime}
+  ${item.online ? `
+    <br>
+    ${item.freshness} • ${item.ageMinutes} MIN AGO
+  ` : ''}
+</span>
       </div>
     `).join('');
 
