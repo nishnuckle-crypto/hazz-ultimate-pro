@@ -958,7 +958,50 @@ return;
       MANUAL DATA MODE • LIVE MARKET FEED NOT CONNECTED
     </p>
   `;
+document.getElementById('loadLiveMarket').addEventListener('click', async () => {
+  const status = document.getElementById('liveMarketStatus');
+  const timeframe = document.getElementById('analysisTimeframe').value;
 
+  const intervals = {
+    M15: '15min',
+    M30: '30min',
+    H1: '1h',
+    H4: '4h'
+  };
+
+  if (!intervals[timeframe]) {
+    status.textContent = 'ERROR: D1 LIVE DATA NOT SUPPORTED YET';
+    return;
+  }
+
+  status.textContent = 'CONNECTING TO LIVE XAUUSD...';
+
+  try {
+    const response = await fetch(
+      `/api/market?interval=${intervals[timeframe]}`
+    );
+
+    const data = await response.json();
+
+    if (!data.success || !data.candles || data.candles.length < 4) {
+      throw new Error(data.message || 'Market data unavailable');
+    }
+
+    const candle = data.candles[1];
+
+    document.getElementById('candleOpen').value = candle.open;
+    document.getElementById('candleHigh').value = candle.high;
+    document.getElementById('candleLow').value = candle.low;
+    document.getElementById('candleClose').value = candle.close;
+
+    status.textContent =
+      'CONNECTED ✓ XAUUSD ' + timeframe +
+      ' | Confirmed candle: ' + candle.datetime;
+
+  } catch (error) {
+    status.textContent = 'LIVE DATA ERROR: ' + error.message;
+  }
+});
   document.getElementById('calculateCandle')
     .addEventListener('click', () => {
 
