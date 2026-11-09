@@ -1162,14 +1162,14 @@ return;
       // MULTI-CANDLE TREND CONFIRMATION
 
 const bullishCandles =
-  [prevOpen, candleOpen, thirdOpen].filter((open, i) => {
-    const close = [prevClose, candleClose, thirdClose][i];
+  [po, o, to].filter((open, i) => {
+    const close = [pc, c, tc][i];
     return close > open;
   }).length;
 
 const bearishCandles =
-  [prevOpen, candleOpen, thirdOpen].filter((open, i) => {
-    const close = [prevClose, candleClose, thirdClose][i];
+  [po, o, to].filter((open, i) => {
+    const close = [pc, c, tc][i];
     return close < open;
   }).length;
 
