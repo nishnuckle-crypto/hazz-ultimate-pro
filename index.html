@@ -479,19 +479,120 @@ if (module === 'news') {
 
           <div class="ai-analysis-result"></div>
         </div>
-      `).join('');
-// ==================================
-// HAZZ NEWS CORRELATION INTELLIGENCE
+      `).join('');// ==================================
+// HAZZ ADVANCED NEWS CORRELATION
 // ==================================
 
 const correlationBox = document.createElement('div');
 correlationBox.className = 'ai-analysis-panel';
 
-const analyzedArticles = articles.filter(article =>
+const normalizeHeadline = title =>
+  String(title || '')
+    .toLowerCase()
+    .replace(/https?:\/\/\S+/g, '')
+    .replace(/[^\w\s]/g, ' ')
+    .replace(/\b(the|a|an|to|of|in|on|for|and|as|at|by|with)\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const tokens = title =>
+  new Set(normalizeHeadline(title).split(' ').filter(word => word.length > 2));
+
+const similarity = (a, b) => {
+  const A = tokens(a);
+  const B = tokens(b);
+
+  if (!A.size || !B.size) return 0;
+
+  const intersection = [...A].filter(word => B.has(word)).length;
+  const union = new Set([...A, ...B]).size;
+
+  return intersection / union;
+};
+
+// REMOVE NEAR-DUPLICATE HEADLINES
+const uniqueArticles = [];
+
+articles.forEach(article => {
+  const duplicate = uniqueArticles.some(existing =>
+    similarity(article.title, existing.title) >= 0.65
+  );
+
+  if (!duplicate) uniqueArticles.push(article);
+});
+
+// SOURCE WEIGHTING
+const sourceWeight = source => {
+  const name = String(source || '').toLowerCase();
+
+  if (/reuters|bloomberg|financial times|wall street journal/.test(name)) return 3;
+  if (/cnbc|associated press|ap news|bbc|marketwatch/.test(name)) return 2;
+  return 1;
+};
+
+const analyzedArticles = uniqueArticles.filter(article =>
   ['BULLISH', 'BEARISH'].includes(
     String(article.sentiment || '').toUpperCase()
   )
 );
+
+let bullishScore = 0;
+let bearishScore = 0;
+
+analyzedArticles.forEach(article => {
+  const weight = sourceWeight(article.source);
+  const sentiment = String(article.sentiment).toUpperCase();
+
+  if (sentiment === 'BULLISH') bullishScore += weight;
+  if (sentiment === 'BEARISH') bearishScore += weight;
+});
+
+const totalScore = bullishScore + bearishScore;
+
+const bullishPercentage = totalScore
+  ? Math.round((bullishScore / totalScore) * 100)
+  : 0;
+
+const bearishPercentage = totalScore
+  ? Math.round((bearishScore / totalScore) * 100)
+  : 0;
+
+let correlationStatus = 'INSUFFICIENT DATA';
+
+if (analyzedArticles.length >= 5) {
+  if (bullishPercentage >= 70) {
+    correlationStatus = 'BULLISH CONSENSUS';
+  } else if (bearishPercentage >= 70) {
+    correlationStatus = 'BEARISH CONSENSUS';
+  } else {
+    correlationStatus = 'MIXED SIGNALS';
+  }
+}
+
+const conflictDetected =
+  bullishScore > 0 &&
+  bearishScore > 0 &&
+  Math.abs(bullishPercentage - bearishPercentage) < 20;
+
+let confidence = 'LOW';
+
+if (
+  analyzedArticles.length >= 10 &&
+  Math.max(bullishPercentage, bearishPercentage) >= 80 &&
+  !conflictDetected
+) {
+  confidence = 'HIGH';
+} else if (
+  analyzedArticles.length >= 5 &&
+  Math.max(bullishPercentage, bearishPercentage) >= 65 &&
+  !conflictDetected
+) {
+  confidence = 'MEDIUM';
+}
+
+if (conflictDetected) {
+  correlationStatus = 'MIXED SIGNALS';
+}
 
 const uniqueSources = new Set(
   analyzedArticles.map(article =>
@@ -499,33 +600,28 @@ const uniqueSources = new Set(
   )
 );
 
-const bullishCount = analyzedArticles.filter(article =>
-  String(article.sentiment).toUpperCase() === 'BULLISH'
-).length;
-
-const bearishCount = analyzedArticles.filter(article =>
-  String(article.sentiment).toUpperCase() === 'BEARISH'
-).length;
-
-let correlationStatus = 'INSUFFICIENT DATA';
-
-if (uniqueSources.size >= 3 && analyzedArticles.length >= 5) {
-  if (bullishCount / analyzedArticles.length >= 0.7) {
-    correlationStatus = 'BULLISH CONSENSUS';
-  } else if (bearishCount / analyzedArticles.length >= 0.7) {
-    correlationStatus = 'BEARISH CONSENSUS';
-  } else {
-    correlationStatus = 'MIXED SIGNALS';
-  }
-}
-
 correlationBox.innerHTML = `
-  <h3>📊 NEWS CORRELATION INTELLIGENCE</h3>
+  <h3>📊 ADVANCED NEWS CORRELATION</h3>
+
   <p><b>MARKET CONSENSUS:</b> ${correlationStatus}</p>
-  <p><b>BULLISH ARTICLES:</b> ${bullishCount}</p>
-  <p><b>BEARISH ARTICLES:</b> ${bearishCount}</p>
-  <p><b>UNIQUE SOURCES:</b> ${uniqueSources.size}</p>
-  <small>HEADLINE-BASED AGGREGATION • NOT A TRADE SIGNAL</small>
+
+  <p><b>BULLISH WEIGHT:</b> ${bullishPercentage}%</p>
+
+  <p><b>BEARISH WEIGHT:</b> ${bearishPercentage}%</p>
+
+  <p><b>CONFIDENCE:</b> ${confidence}</p>
+
+  <p><b>UNIQUE HEADLINES:</b> ${uniqueArticles.length}</p>
+
+  <p><b>DUPLICATES REMOVED:</b> ${articles.length - uniqueArticles.length}</p>
+
+  <p><b>ANALYZED SOURCES:</b> ${uniqueSources.size}</p>
+
+  <p><b>CONFLICT DETECTION:</b> ${conflictDetected ? 'DETECTED' : 'NOT DETECTED'}</p>
+
+  <small>
+    HEADLINE-BASED WEIGHTED ANALYSIS • NOT A TRADE SIGNAL
+  </small>
 `;
 
 feed.prepend(correlationBox);
