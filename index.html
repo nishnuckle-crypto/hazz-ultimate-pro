@@ -892,7 +892,16 @@ return;
       </select>
 
       <h4>OHLC PRICE DATA</h4>
+<button
+  type="button"
+  id="loadLiveMarket"
+  class="ai-analyze-button">
+  🟢 LOAD LIVE XAUUSD DATA
+</button>
 
+<p id="liveMarketStatus" class="muted">
+  LIVE DATA: NOT CONNECTED
+</p>
       <input id="candleOpen" type="number" step="any" placeholder="OPEN">
       <input id="candleHigh" type="number" step="any" placeholder="HIGH">
       <input id="candleLow" type="number" step="any" placeholder="LOW">
