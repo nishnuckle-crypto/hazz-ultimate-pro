@@ -1073,7 +1073,21 @@ document.getElementById('loadLiveMarket').addEventListener('click', async () => 
     status.textContent = 'LIVE DATA ERROR: ' + error.message;
   }
 });
+// AUTO REFRESH ENGINE
+if (window.liveMarketRefreshTimer) {
+  clearInterval(window.liveMarketRefreshTimer);
+}
 
+window.liveMarketRefreshTimer = setInterval(() => {
+  const liveButton = document.getElementById('loadLiveMarket');
+
+  if (liveButton) {
+    liveButton.click();
+  }
+}, 60000);
+
+// LOAD LIVE DATA AUTOMATICALLY
+document.getElementById('loadLiveMarket').click();
   document.getElementById('calculateCandle')
     .addEventListener('click', () => {
 
