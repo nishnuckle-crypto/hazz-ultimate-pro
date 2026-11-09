@@ -2027,6 +2027,28 @@ if (signal !== 'WAIT' && volatilityStatus === 'LOW') {
   reason = 'EXTREME VOLATILITY • ENTRY BLOCKED';
   safetyStatus = 'BLOCKED';
 }
+      if (signal !== 'BUY' && signal !== 'SELL') {
+  if (tradeMonitorTimer) {
+    clearInterval(tradeMonitorTimer);
+    tradeMonitorTimer = null;
+  }
+
+  activeTrade = null;
+
+  const monitorStatus =
+    document.getElementById('tradeMonitorStatus');
+
+  const monitorDetails =
+    document.getElementById('tradeMonitorDetails');
+
+  if (monitorStatus) {
+    monitorStatus.textContent = 'NO ACTIVE TRADE';
+  }
+
+  if (monitorDetails) {
+    monitorDetails.innerHTML = '';
+  }
+}
       let sl = 0;
       let tp1 = 0;
       let tp2 = 0;
