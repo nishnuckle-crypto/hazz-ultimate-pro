@@ -521,10 +521,10 @@ if (['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].includes(rssImpact)) {
 
 // DIRECTIONAL CLUES
 const goldUp =
-  /\b(gold rises|gold rose|gold gains|gold rallies|gold jumps|gold surges|bullion rises)\b/.test(title);
+  /\b(gold rises|gold rose|gold gains|gold rallies|gold jumps|gold surges|bullion rises|gold advances|gold advanced|gold climbs|gold climbed|gold holds gains|gold holds onto gains|gold reclaims|gold recovers|gold rebounds|gold edges higher|bullion advances|bullion gains|gold pushes higher)\b/.test(title);
 
 const goldDown =
-  /\b(gold falls|gold fell|gold drops|gold declines|gold slumps|gold selloff|bullion falls)\b/.test(title);
+  /\b(gold falls|gold fell|gold drops|gold declines|gold slumps|gold selloff|bullion falls|gold retreats|gold loses ground|gold loses gains|gold slides|gold sinks|gold tumbles|gold weakens|gold edges lower|gold pulls back|bullion declines|gold moves lower)\b/.test(title);
 
 const usdUp =
   /\b(dollar rises|dollar gains|dollar strengthens|dollar rallies|usd strengthens|dollar gets stronger|dollar advances|dollar climbs|dollar jumps|dollar surges|dollar firms|dollar holds gains|dollar holds onto gains|dollar boosted|usd gains|greenback rises|greenback gains)\b/.test(title);
