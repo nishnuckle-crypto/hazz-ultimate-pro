@@ -735,27 +735,46 @@ const impactResults = eventGroups.map(group => {
   matched.forEach(article => {
     const title = String(article.title || '');
     const rules = impactRules[group.name];
-
-    let isBullish = false;
-    let isBearish = false;
-
-    if (group.name === 'GOLD MARKET') {
-      const sentiment = String(article.sentiment || '').toUpperCase();
-
-      isBullish = sentiment === 'BULLISH';
-      isBearish = sentiment === 'BEARISH';
-    } else if (rules) {
-      isBullish = rules.bullish.test(title);
-      isBearish = rules.bearish.test(title);
+let isBullish = false;
+let isBearish = false;
+const headline = String(title || '').toLowerCase();
+// GOLD MARKET
+if (group.name === 'GOLD MARKET') {
+  const sentiment = String(article.sentiment || '').toUpperCase();
+  isBullish = sentiment === 'BULLISH';
+  isBearish = sentiment === 'BEARISH';
+}
+// MACRO EVENT CONTEXT DETECTION
+else if (rules) {
+  isBullish = rules.bullish.test(headline);
+  isBearish = rules.bearish.test(headline);
+  // EMPLOYMENT CONTEXT
+  if (group.name === 'EMPLOYMENT / NFP') {
+    if (/\b(strong employment figures|strong labor market|strong labour market|jobs beat expectations|payrolls beat expectations|employment growth accelerates)\b/i.test(headline)) {
+      isBearish = true;
     }
-
-    if (isBullish && !isBearish) {
-      bullish++;
-    } else if (isBearish && !isBullish) {
-      bearish++;
-    } else {
-      neutral++;
+    if (/\b(weak employment figures|weak labor market|weak labour market|jobs miss expectations|payrolls miss expectations|employment growth slows)\b/i.test(headline)) {
+      isBullish = true;
     }
+  }
+  // FED RATE EXPECTATIONS
+  if (group.name === 'FED / INTEREST RATES') {
+    if (/\b(rate hike bets|bets on rate hikes|higher rate expectations|markets price in rate hikes)\b/i.test(headline)) {
+      isBearish = true;
+    }
+    if (/\b(rate cut bets|bets on rate cuts|lower rate expectations|markets price in rate cuts)\b/i.test(headline)) {
+      isBullish = true;
+    }
+  }
+  // CONFLICTING EVIDENCE MUST REMAIN NEUTRAL
+}
+if (isBullish && !isBearish) {
+  bullish++;
+} else if (isBearish && !isBullish) {
+  bearish++;
+} else {
+  neutral++;
+}
   });
 
   const directionalTotal = bullish + bearish;
