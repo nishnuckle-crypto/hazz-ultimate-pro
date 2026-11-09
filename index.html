@@ -1339,27 +1339,27 @@ if (structureTrend === 'BEARISH STRUCTURE') {
     chochStatus = 'BULLISH CHoCH';
   }
 }
-    // ADVANCED MARKET BIAS CONFIRMATION
+    
+// ADVANCED MARKET BIAS CONFIRMATION
 
 if (
   mtfBullishCount >= 3 &&
   structureTrend === 'BULLISH STRUCTURE' &&
-  multiCandleConfirmation === 'BULLISH CONFIRMATION' &&
-  direction !== 'BEARISH CANDLE'
+  multiCandleConfirmation === 'BULLISH CONFIRMATION'
 ) {
   marketBias = 'BULLISH';
 
 } else if (
   mtfBearishCount >= 3 &&
   structureTrend === 'BEARISH STRUCTURE' &&
-  multiCandleConfirmation === 'BEARISH CONFIRMATION' &&
-  direction !== 'BULLISH CANDLE'
+  multiCandleConfirmation === 'BEARISH CONFIRMATION'
 ) {
   marketBias = 'BEARISH';
 
 } else {
   marketBias = 'NEUTRAL';
-}  
+}
+  
       const direction = c > o ? 'BULLISH CANDLE'
         : c < o ? 'BEARISH CANDLE'
         : 'NEUTRAL CANDLE';
