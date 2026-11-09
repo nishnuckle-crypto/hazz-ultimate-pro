@@ -1741,20 +1741,46 @@ result.innerHTML = `
       );
 
       const datasets = await Promise.all(
-        responses.map(async response => {
-          if (!response.ok) {
-            throw new Error('API HTTP ' + response.status);
-          }
+  responses.map(async (response, index) => {
+    const tf = names[index];
 
-          const data = await response.json();
+    if (!response.ok) {
+      throw new Error(tf + ' API HTTP ' + response.status);
+    }
 
-          if (!data.success || !data.candles || data.candles.length < 22) {
-            throw new Error('Insufficient candle data');
-          }
+    const data = await response.json();
 
-          return data.candles;
-        })
-      );
+    if (!data.success || !data.candles || data.candles.length < 22) {
+      throw new Error(tf + ' insufficient candle data');
+    }
+
+    const latest = data.candles[0];
+
+    const candleTime = new Date(
+      latest.datetime.replace(' ', 'T') + '+08:00'
+    );
+
+    const ageMinutes =
+      (Date.now() - candleTime.getTime()) / 60000;
+
+    const maxAge = {
+      M15: 20,
+      M30: 40,
+      H1: 75,
+      H4: 270
+    }[tf];
+
+    if (
+      !Number.isFinite(ageMinutes) ||
+      ageMinutes < 0 ||
+      ageMinutes > maxAge
+    ) {
+      throw new Error(tf + ' DATA NOT FRESH');
+    }
+
+    return data.candles;
+  })
+);
 
       const market = {};
 
