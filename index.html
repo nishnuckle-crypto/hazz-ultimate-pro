@@ -812,7 +812,7 @@ const activeImpactResults = impactResults.filter(event =>
 );
 
 const scoredEvents = activeImpactResults.filter(event =>
-  event.score !== null
+  event.bullish + event.bearish > 0
 );
 
 let overallScore = null;
