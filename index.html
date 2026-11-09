@@ -581,7 +581,19 @@ const conflict =
   (inflationHot && inflationCool) ||
   (jobsStrong && jobsWeak) ||
   (hawkish && dovish) ||
-  (yieldUp && yieldDown);
+  (yieldUp && yieldDown) ||
+
+  // GOLD VS USD CONFLICT
+  (goldUp && usdUp) ||
+  (goldDown && usdDown) ||
+
+  // GOLD VS ECONOMIC POLICY CONFLICT
+  (goldUp && (inflationHot || jobsStrong || hawkish || yieldUp)) ||
+  (goldDown && (inflationCool || jobsWeak || dovish || yieldDown)) ||
+
+  // USD VS FED POLICY CONFLICT
+  (usdUp && dovish) ||
+  (usdDown && hawkish);
 
 // PRIORITY 1: CONFLICT
 if (conflict) {
