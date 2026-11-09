@@ -907,7 +907,23 @@ return;
       <input id="thirdHigh" type="number" step="any" placeholder="THIRD HIGH">
       <input id="thirdLow" type="number" step="any" placeholder="THIRD LOW">
       <input id="thirdClose" type="number" step="any" placeholder="THIRD CLOSE">
-      
+      <h4>MULTI-TIMEFRAME TREND DATA</h4>
+
+<h4>M15 TREND</h4>
+<input id="mtfM15Open" type="number" step="any" placeholder="M15 OPEN">
+<input id="mtfM15Close" type="number" step="any" placeholder="M15 CLOSE">
+
+<h4>M30 TREND</h4>
+<input id="mtfM30Open" type="number" step="any" placeholder="M30 OPEN">
+<input id="mtfM30Close" type="number" step="any" placeholder="M30 CLOSE">
+
+<h4>H1 TREND</h4>
+<input id="mtfH1Open" type="number" step="any" placeholder="H1 OPEN">
+<input id="mtfH1Close" type="number" step="any" placeholder="H1 CLOSE">
+
+<h4>H4 TREND</h4>
+<input id="mtfH4Open" type="number" step="any" placeholder="H4 OPEN">
+<input id="mtfH4Close" type="number" step="any" placeholder="H4 CLOSE">
       <button id="calculateCandle" class="ai-analyze-button">
       ANALYZE MARKET
       </button>
@@ -938,15 +954,41 @@ return;
       const th = Number(document.getElementById('thirdHigh').value);
       const tl = Number(document.getElementById('thirdLow').value);
       const tc = Number(document.getElementById('thirdClose').value);
-      
+      // MULTI-TIMEFRAME DATA
+const mtfM15Open = Number(document.getElementById('mtfM15Open').value);
+const mtfM15Close = Number(document.getElementById('mtfM15Close').value);
+
+const mtfM30Open = Number(document.getElementById('mtfM30Open').value);
+const mtfM30Close = Number(document.getElementById('mtfM30Close').value);
+
+const mtfH1Open = Number(document.getElementById('mtfH1Open').value);
+const mtfH1Close = Number(document.getElementById('mtfH1Close').value);
+
+const mtfH4Open = Number(document.getElementById('mtfH4Open').value);
+const mtfH4Close = Number(document.getElementById('mtfH4Close').value);
       const result = document.getElementById('technicalResult');
 
       if (
-  ![o, h, l, c, po, ph, pl, pc, to, th, tl, tc].every(Number.isFinite) ||
-  ['candleOpen','candleHigh','candleLow','candleClose',
-   'prevOpen','prevHigh','prevLow','prevClose',
-   'thirdOpen','thirdHigh','thirdLow','thirdClose']
-    .some(id => document.getElementById(id).value.trim() === '') ||
+  ![
+    o, h, l, c,
+    po, ph, pl, pc,
+    to, th, tl, tc,
+    mtfM15Open, mtfM15Close,
+    mtfM30Open, mtfM30Close,
+    mtfH1Open, mtfH1Close,
+    mtfH4Open, mtfH4Close
+  ].every(Number.isFinite) ||
+
+  [
+    'candleOpen','candleHigh','candleLow','candleClose',
+    'prevOpen','prevHigh','prevLow','prevClose',
+    'thirdOpen','thirdHigh','thirdLow','thirdClose',
+    'mtfM15Open','mtfM15Close',
+    'mtfM30Open','mtfM30Close',
+    'mtfH1Open','mtfH1Close',
+    'mtfH4Open','mtfH4Close'
+  ].some(id => document.getElementById(id).value.trim() === '') ||
+
   h < Math.max(o, c) ||
   l > Math.min(o, c) ||
   h < l ||
@@ -955,7 +997,7 @@ return;
   ph < pl ||
   th < Math.max(to, tc) ||
   tl > Math.min(to, tc) ||
-  th < tl    
+  th < tl
 ) {
   result.innerHTML =
     '<h4>INVALID PRICE DATA</h4><p>Please check OHLC values.</p>';
@@ -1187,6 +1229,50 @@ const multiCandleTrendStrength =
     : bullishCandles === 2 || bearishCandles === 2
       ? 'MODERATE'
       : 'WEAK';
+      // MULTI-TIMEFRAME TREND ANALYSIS
+
+const mtfM15 = mtfM15Close > mtfM15Open
+  ? 'BULLISH'
+  : mtfM15Close < mtfM15Open
+    ? 'BEARISH'
+    : 'NEUTRAL';
+
+const mtfM30 = mtfM30Close > mtfM30Open
+  ? 'BULLISH'
+  : mtfM30Close < mtfM30Open
+    ? 'BEARISH'
+    : 'NEUTRAL';
+
+const mtfH1 = mtfH1Close > mtfH1Open
+  ? 'BULLISH'
+  : mtfH1Close < mtfH1Open
+    ? 'BEARISH'
+    : 'NEUTRAL';
+
+const mtfH4 = mtfH4Close > mtfH4Open
+  ? 'BULLISH'
+  : mtfH4Close < mtfH4Open
+    ? 'BEARISH'
+    : 'NEUTRAL';
+
+const mtfBullishCount = [
+  mtfM15, mtfM30, mtfH1, mtfH4
+].filter(trend => trend === 'BULLISH').length;
+
+const mtfBearishCount = [
+  mtfM15, mtfM30, mtfH1, mtfH4
+].filter(trend => trend === 'BEARISH').length;
+
+const mtfAlignment =
+  mtfBullishCount === 4
+    ? 'FULL BULLISH ALIGNMENT'
+    : mtfBearishCount === 4
+      ? 'FULL BEARISH ALIGNMENT'
+      : mtfBullishCount >= 3
+        ? 'BULLISH ALIGNMENT'
+        : mtfBearishCount >= 3
+          ? 'BEARISH ALIGNMENT'
+          : 'MIXED / NO ALIGNMENT';
       const direction = c > o ? 'BULLISH CANDLE'
         : c < o ? 'BEARISH CANDLE'
         : 'NEUTRAL CANDLE';
@@ -1275,6 +1361,34 @@ result.innerHTML = `
       <span class="result-value">${candleMomentum}</span>
     </div>
     <div class="result-row">
+    <div class="pattern-box">
+  MULTI-TIMEFRAME TREND CONFIRMATION
+</div>
+
+<div class="result-row">
+  <span class="result-label">M15 TREND</span>
+  <span class="result-value">${mtfM15}</span>
+</div>
+
+<div class="result-row">
+  <span class="result-label">M30 TREND</span>
+  <span class="result-value">${mtfM30}</span>
+</div>
+
+<div class="result-row">
+  <span class="result-label">H1 TREND</span>
+  <span class="result-value">${mtfH1}</span>
+</div>
+
+<div class="result-row">
+  <span class="result-label">H4 TREND</span>
+  <span class="result-value">${mtfH4}</span>
+</div>
+
+<div class="result-row">
+  <span class="result-label">MTF ALIGNMENT</span>
+  <span class="result-value">${mtfAlignment}</span>
+</div>
   <div class="result-row">
   <span class="result-label">MULTI-CANDLE CONFIRMATION</span>
   <span class="result-value">${multiCandleConfirmation}</span>
