@@ -645,18 +645,41 @@ else {
   riskNote = 'Insufficient directional evidence. Do not treat this headline as a trading signal.';
 }
 
-// FED MEETING WITHOUT POLICY DIRECTION
-if (
-  /\b(fomc|federal reserve|fed meeting)\b/.test(title) &&
-  !hawkish &&
-  !dovish &&
-  !conflict
-) {
-  sentiment = 'NEUTRAL';
-  goldImpact = 'UNCERTAIN';
-  usdImpact = 'UNCERTAIN';
-  analysis = 'Fed meeting detected. Policy direction cannot be determined from the headline alone.';
-  riskNote = 'Check the official Fed statement and policy guidance before assessing market direction.';
+// ADVANCED FED POLICY INTELLIGENCE
+const fedEvent =
+  /\b(fomc|federal reserve|fed meeting|federal open market committee)\b/.test(title);
+
+const rateHold =
+  /\b(holds? rates?|keeps? rates? unchanged|maintains? interest rates|no change in rates|rate pause)\b/.test(title);
+
+const rateHike =
+  /\b(rate hike|raises? interest rates|raises? rates|increases? rates|higher interest rates)\b/.test(title);
+
+const rateCut =
+  /\b(rate cut|cuts? interest rates|lowers? rates|reduces? rates)\b/.test(title);
+
+if (fedEvent && !conflict) {
+  if (rateHike || hawkish) {
+    bearishGold('Hawkish Fed policy detected. Higher interest rates may support USD and pressure gold.');
+    analysis = 'HAWKISH FED: The headline indicates tighter monetary policy.';
+    riskNote = 'Confirm the actual Fed decision and forward guidance before trading.';
+  } else if (rateCut || dovish) {
+    bullishGold('Dovish Fed policy detected. Lower interest rates may weaken USD and support gold.');
+    analysis = 'DOVISH FED: The headline indicates monetary policy easing.';
+    riskNote = 'Confirm the actual Fed decision and forward guidance before trading.';
+  } else if (rateHold) {
+    sentiment = 'NEUTRAL';
+    goldImpact = 'UNCERTAIN';
+    usdImpact = 'UNCERTAIN';
+    analysis = 'FED RATE HOLD: Interest rates are reported unchanged. Market impact depends on the Fed statement and future guidance.';
+    riskNote = 'A rate hold alone does not establish a bullish or bearish direction.';
+  } else {
+    sentiment = 'NEUTRAL';
+    goldImpact = 'UNCERTAIN';
+    usdImpact = 'UNCERTAIN';
+    analysis = 'FED EVENT DETECTED: No confirmed policy decision or directional guidance identified in the headline.';
+    riskNote = 'Wait for the official Fed statement and policy guidance.';
+  }
 }
 
 // NEUTRAL SAFETY
