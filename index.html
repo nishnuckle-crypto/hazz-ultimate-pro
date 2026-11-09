@@ -1061,6 +1061,77 @@ return;
       } else if (shootingStar) {
         candlePattern = 'SHOOTING STAR';
 }
+            // CANDLE PATTERN INTELLIGENCE
+
+      let patternDescription = 'No recognised candlestick pattern.';
+      let marketBias = 'NEUTRAL';
+      let patternStrength = 'LOW';
+
+      const patternIntelligence = {
+        'BULLISH ENGULFING': {
+          description: 'A bullish candle engulfs the previous bearish candle, suggesting possible buying pressure.',
+          bias: 'POTENTIALLY BULLISH',
+          strength: 'MEDIUM'
+        },
+        'BEARISH ENGULFING': {
+          description: 'A bearish candle engulfs the previous bullish candle, suggesting possible selling pressure.',
+          bias: 'POTENTIALLY BEARISH',
+          strength: 'MEDIUM'
+        },
+        'BULLISH MARUBOZU': {
+          description: 'A strong bullish candle with very small or no shadows, indicating strong buying momentum.',
+          bias: 'POTENTIALLY BULLISH',
+          strength: 'MEDIUM'
+        },
+        'BEARISH MARUBOZU': {
+          description: 'A strong bearish candle with very small or no shadows, indicating strong selling momentum.',
+          bias: 'POTENTIALLY BEARISH',
+          strength: 'MEDIUM'
+        },
+        'MORNING STAR': {
+          description: 'A three-candle formation that may indicate a bullish reversal after selling pressure.',
+          bias: 'POTENTIALLY BULLISH',
+          strength: 'HIGH'
+        },
+        'EVENING STAR': {
+          description: 'A three-candle formation that may indicate a bearish reversal after buying pressure.',
+          bias: 'POTENTIALLY BEARISH',
+          strength: 'HIGH'
+        },
+        'THREE WHITE SOLDIERS': {
+          description: 'Three consecutive bullish candles may indicate sustained buying momentum.',
+          bias: 'POTENTIALLY BULLISH',
+          strength: 'HIGH'
+        },
+        'THREE BLACK CROWS': {
+          description: 'Three consecutive bearish candles may indicate sustained selling momentum.',
+          bias: 'POTENTIALLY BEARISH',
+          strength: 'HIGH'
+        },
+        'DOJI': {
+          description: 'Open and close prices are very close, indicating market indecision.',
+          bias: 'NEUTRAL',
+          strength: 'LOW'
+        },
+        'HAMMER': {
+          description: 'A long lower shadow may indicate rejection of lower prices. Context is important.',
+          bias: 'POTENTIALLY BULLISH',
+          strength: 'LOW'
+        },
+        'SHOOTING STAR': {
+          description: 'A long upper shadow may indicate rejection of higher prices. Context is important.',
+          bias: 'POTENTIALLY BEARISH',
+          strength: 'LOW'
+        }
+      };
+
+      const intelligence = patternIntelligence[candlePattern];
+
+      if (intelligence) {
+        patternDescription = intelligence.description;
+        marketBias = intelligence.bias;
+        patternStrength = intelligence.strength;
+      }
       const direction = c > o ? 'BULLISH CANDLE'
         : c < o ? 'BEARISH CANDLE'
         : 'NEUTRAL CANDLE';
@@ -1093,8 +1164,23 @@ result.innerHTML = `
     </div>
 
     <div class="pattern-box ${patternClass}">
-      ${candlePattern}
-    </div>
+  ${candlePattern}
+</div>
+
+<div class="result-row">
+  <span class="result-label">MARKET BIAS</span>
+  <span class="result-value">${marketBias}</span>
+</div>
+
+<div class="result-row">
+  <span class="result-label">PATTERN STRENGTH</span>
+  <span class="result-value">${patternStrength}</span>
+</div>
+
+<div class="pattern-box">
+  <span class="result-label">PATTERN DESCRIPTION</span>
+  <p>${patternDescription}</p>
+</div>
 
     <div class="result-row">
       <span class="result-label">PRICE RANGE</span>
