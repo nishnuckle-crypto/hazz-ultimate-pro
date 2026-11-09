@@ -1179,6 +1179,14 @@ const multiCandleConfirmation =
     : bearishCandles === 3
       ? 'BEARISH CONFIRMATION'
       : 'MIXED / NO CONFIRMATION';
+      // MULTI-CANDLE TREND STRENGTH
+
+const multiCandleTrendStrength =
+  bullishCandles === 3 || bearishCandles === 3
+    ? 'STRONG'
+    : bullishCandles === 2 || bearishCandles === 2
+      ? 'MODERATE'
+      : 'WEAK';
       const direction = c > o ? 'BULLISH CANDLE'
         : c < o ? 'BEARISH CANDLE'
         : 'NEUTRAL CANDLE';
@@ -1267,8 +1275,24 @@ result.innerHTML = `
       <span class="result-value">${candleMomentum}</span>
     </div>
     <div class="result-row">
+  <div class="result-row">
   <span class="result-label">MULTI-CANDLE CONFIRMATION</span>
   <span class="result-value">${multiCandleConfirmation}</span>
+</div>
+
+<div class="result-row">
+  <span class="result-label">MULTI-CANDLE TREND STRENGTH</span>
+  <span class="result-value">${multiCandleTrendStrength}</span>
+</div>
+
+<div class="result-row">
+  <span class="result-label">BULLISH CANDLES</span>
+  <span class="result-value">${bullishCandles} / 3</span>
+</div>
+
+<div class="result-row">
+  <span class="result-label">BEARISH CANDLES</span>
+  <span class="result-value">${bearishCandles} / 3</span>
 </div>
     <div class="result-row">
       <span class="result-label">OPEN</span>
