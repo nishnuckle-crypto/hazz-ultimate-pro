@@ -1724,7 +1724,101 @@ result.innerHTML = `
 </div>
   `;
 
-  document.getElementById('generateSignal').onclick = async () => {
+let activeTrade = null;
+let tradeMonitorTimer = null;
+
+async function monitorActiveTrade() {
+  if (!activeTrade) return;
+
+  const monitorStatus =
+    document.getElementById('tradeMonitorStatus');
+
+  const monitorDetails =
+    document.getElementById('tradeMonitorDetails');
+
+  if (!monitorStatus || !monitorDetails) return;
+
+  try {
+    const response = await fetch('/api/market?interval=1min');
+
+    if (!response.ok) {
+      throw new Error('PRICE API ERROR');
+    }
+
+    const data = await response.json();
+
+    if (!data.success || !data.candles || !data.candles.length) {
+      throw new Error('PRICE DATA UNAVAILABLE');
+    }
+
+    const candle = data.candles[0];
+
+    const high = Number(candle.high);
+    const low = Number(candle.low);
+
+    if (!Number.isFinite(high) || !Number.isFinite(low)) {
+      throw new Error('INVALID PRICE DATA');
+    }
+
+    const isBuy = activeTrade.direction === 'BUY';
+
+    let hit = '';
+
+    if (isBuy && low <= activeTrade.sl) {
+      hit = 'SL HIT';
+    } else if (!isBuy && high >= activeTrade.sl) {
+      hit = 'SL HIT';
+    } else if (isBuy && high >= activeTrade.tp3) {
+      hit = 'TP3 HIT';
+    } else if (!isBuy && low <= activeTrade.tp3) {
+      hit = 'TP3 HIT';
+    } else if (isBuy && high >= activeTrade.tp2) {
+      hit = 'TP2 HIT';
+    } else if (!isBuy && low <= activeTrade.tp2) {
+      hit = 'TP2 HIT';
+    } else if (isBuy && high >= activeTrade.tp1) {
+      hit = 'TP1 HIT';
+    } else if (!isBuy && low <= activeTrade.tp1) {
+      hit = 'TP1 HIT';
+    }
+
+    if (hit) {
+      activeTrade.status = hit;
+    }
+
+    monitorStatus.textContent = activeTrade.status;
+
+    monitorDetails.innerHTML = `
+      <div class="result-row">
+        <span class="result-label">DIRECTION</span>
+        <span class="result-value">${activeTrade.direction}</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">LATEST 1M HIGH</span>
+        <span class="result-value">${high.toFixed(3)}</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">LATEST 1M LOW</span>
+        <span class="result-value">${low.toFixed(3)}</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">LAST CHECK</span>
+        <span class="result-value">${new Date().toLocaleTimeString()}</span>
+      </div>
+    `;
+
+    if (hit === 'SL HIT' || hit === 'TP3 HIT') {
+      clearInterval(tradeMonitorTimer);
+      tradeMonitorTimer = null;
+    }
+
+  } catch (error) {
+    monitorStatus.textContent = 'MONITOR ERROR';
+    monitorDetails.textContent = error.message;
+  }
+}
+    
+document.getElementById('generateSignal').onclick = async () => {
     const button = document.getElementById('generateSignal');
     const status = document.getElementById('signalStatus');
     const result = document.getElementById('signalResult');
@@ -1928,15 +2022,7 @@ if (signal !== 'WAIT' && volatilityStatus === 'LOW') {
   signal = 'WAIT';
   reason = 'LOW VOLATILITY • ENTRY BLOCKED';
   safetyStatus = 'BLOCKED';
-} 
-
-else if (signal !== 'WAIT' && volatilityStatus === 'HIGH') {
-  signal = 'WAIT';
-  reason = 'EXTREME VOLATILITY • ENTRY BLOCKED';
-  safetyStatus = 'BLOCKED';
-}
-
-else if (signal !== 'WAIT' && volatilityStatus === 'HIGH') {
+} else if (signal !== 'WAIT' && volatilityStatus === 'HIGH') {
   signal = 'WAIT';
   reason = 'EXTREME VOLATILITY • ENTRY BLOCKED';
   safetyStatus = 'BLOCKED';
@@ -1961,7 +2047,35 @@ else if (signal !== 'WAIT' && volatilityStatus === 'HIGH') {
         tp2 = entry - risk * 2;
         tp3 = entry - risk * 3;
       }
+if (signal === 'BUY' || signal === 'SELL') {
+  if (tradeMonitorTimer) {
+    clearInterval(tradeMonitorTimer);
+  }
 
+  activeTrade = {
+    direction: signal,
+    entry: entry,
+    sl: sl,
+    tp1: tp1,
+    tp2: tp2,
+    tp3: tp3,
+    status: 'ACTIVE'
+  };
+
+  const monitorStatus =
+    document.getElementById('tradeMonitorStatus');
+
+  if (monitorStatus) {
+    monitorStatus.textContent = 'ACTIVE';
+  }
+
+  monitorActiveTrade();
+
+  tradeMonitorTimer = setInterval(
+    monitorActiveTrade,
+    60000
+  );
+}
       const grade =
         signal === 'WAIT'
           ? 'NO GRADE'
