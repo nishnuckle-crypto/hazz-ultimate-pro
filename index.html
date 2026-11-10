@@ -307,13 +307,24 @@ button{width:100%;padding:14px;margin-top:12px;background:#d9b56d;border:0;borde
 
 
 <script type="module">
-import { createClient } from
-'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+let supabase;
 
-const supabase = createClient(
-  'https://onxbtoovnxduckkwydhm.supabase.co',
-  'sb_publishable_vvK94NzTotPXrH9DOXqTQA_O6P_EiJd'
-);
+try {
+  const { createClient } = await import(
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+  );
+
+  supabase = createClient(
+    'https://onxbtoovnxduckkwydhm.supabase.co',
+    'sb_publishable_vvK94NzTotPXrH9DOXqTQA_O6P_EiJd'
+  );
+
+} catch (error) {
+  document.getElementById('message').textContent =
+    'SUPABASE LOAD ERROR: ' + error.message;
+
+  throw error;
+}
 
 let isRegister = false;
 
