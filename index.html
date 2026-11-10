@@ -995,9 +995,9 @@ let usdImpact = 'UNCERTAIN';
 const headline = String(article.title || '').toLowerCase();
 const rssImpact = String(article.impact || '').toUpperCase();
 
-// OFFICIAL / ACTUAL ECONOMIC EVENTS
+// OFFICIAL CRITICAL EVENT DETECTION
 const officialCritical =
-  /\b(fomc rate decision|fed interest rate decision|interest rate announcement|cpi report released|inflation data released|nonfarm payrolls released|non-farm payrolls released|nfp report released|pce report released|gdp report released|fed announces rate cut|fed announces rate hike)\b/i.test(headline);
+  /\b(fomc statement|fed rate decision|federal reserve decision|cpi report|consumer price index report|pce inflation|nonfarm payrolls report|non-farm payrolls report|nfp report)\b/i.test(headline);
 
 // HIGH-IMPACT MACRO EVENTS
 const highEvent =
