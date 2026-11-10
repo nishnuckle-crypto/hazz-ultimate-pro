@@ -277,8 +277,12 @@ button{width:100%;padding:14px;margin-top:12px;background:#d9b56d;border:0;borde
 <p class="muted">SECURE MEMBER ACCESS</p>
 <input id="email" type="email" placeholder="Email address">
 <input id="password" type="password" placeholder="Password">
-<button id="authButton">LOGIN</button>
-<button class="switch" id="switchButton">CREATE ACCOUNT</button>
+<button id="authButton" onclick="document.getElementById('message').textContent='BUTTON CLICK DETECTED'">
+  LOGIN
+</button>
+<button class="switch" id="switchButton" onclick="document.getElementById('message').textContent='CREATE BUTTON DETECTED'">
+  CREATE ACCOUNT
+</button>
 <p class="muted" id="message"></p>
 </section>
 
