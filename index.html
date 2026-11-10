@@ -479,17 +479,9 @@ const articles = (data.articles || []).filter(article => {
 
   if (!relevant.test(title)) return false;
 
-  // 3. REMOVE EXACT AND NEAR DUPLICATES
-  const normalizedTitle = title
-    .replace(/\s*-\s*[^-]+$/, '')
-    .replace(/[^a-z0-9]/g, '');
-
-  if (seenTitles.has(normalizedTitle)) return false;
-
-  seenTitles.add(normalizedTitle);
-
+    // 3. KEEP ARTICLES FOR ADVANCED DUPLICATE DETECTION
   return true;
-}).slice(0, 20);
+});
 
 
       const escapeHTML = value =>
