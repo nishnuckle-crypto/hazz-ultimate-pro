@@ -307,7 +307,11 @@ button{width:100%;padding:14px;margin-top:12px;background:#d9b56d;border:0;borde
 
 
 <script type="module">
+
 let supabase;
+
+document.getElementById('message').textContent =
+  'MODULE STARTED';
 
 try {
   const { createClient } = await import(
@@ -325,6 +329,7 @@ try {
 
   throw error;
 }
+
 
 let isRegister = false;
 
@@ -3048,7 +3053,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const box = document.getElementById('message');
 
   if (box) {
-    box.textContent = 'HTML SCRIPT WORKING';
+    box.textContent = box.textContent || 'HTML SCRIPT WORKING';
   } else {
     alert('MESSAGE ELEMENT NOT FOUND');
   }
