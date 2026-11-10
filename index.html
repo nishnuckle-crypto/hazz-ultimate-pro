@@ -3042,3 +3042,15 @@ supabase.auth.onAuthStateChange((_event, session) => {
   else showLogin();
 });
 </script>
+
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+  const box = document.getElementById('message');
+
+  if (box) {
+    box.textContent = 'HTML SCRIPT WORKING';
+  } else {
+    alert('MESSAGE ELEMENT NOT FOUND');
+  }
+});
+</script>
