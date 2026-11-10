@@ -430,7 +430,33 @@ if (module === 'news') {
         throw new Error(data.error || 'News unavailable');
       }
 
-      const articles = (data.articles || []).slice(0, 20);
+      // NEWS RELEVANCE FILTER V3
+const seenTitles = new Set();
+
+const articles = (data.articles || []).filter(article => {
+  const title = String(article.title || '').toLowerCase();
+
+  // EXCLUDE IRRELEVANT NEWS
+  const irrelevant = /\b(bitcoin|cryptocurrency|crypto market|mortgage|homebuyers|homebuyers'|housing market|real estate|auto industry|collision shops|data center|artificial intelligence|accountability in the age of ai|household costs|younger americans|consumer costs|committee hearing|removal of lisa)\b/i;
+
+  if (irrelevant.test(title)) return false;
+
+  // KEEP GOLD AND MACROECONOMIC NEWS
+  const relevant = /\b(gold|xauusd|precious metals|bullion|forex|foreign exchange|us dollar|u\.s\. dollar|dollar index|dxy|federal reserve|fed officials|fed meeting|fomc|monetary policy|interest rates?|rate cuts?|rate hikes?|hawkish|dovish|inflation|cpi|pce|consumer prices|producer prices|nonfarm payrolls|non-farm payrolls|nfp|payrolls|unemployment|jobless claims|labor market|labour market|employment data|jobs report|gdp|recession|economic growth|economic slowdown|treasury yields|bond yields|real yields|geopolitical|military conflict|sanctions|ceasefire|safe haven)\b/i;
+
+  if (!relevant.test(title)) return false;
+
+  // REMOVE DUPLICATE HEADLINES
+  const normalizedTitle = title
+    .replace(/[^a-z0-9]/g, '')
+    .trim();
+
+  if (seenTitles.has(normalizedTitle)) return false;
+
+  seenTitles.add(normalizedTitle);
+
+  return true;
+}).slice(0, 20);
 
       const escapeHTML = value =>
         String(value || '').replace(/[&<>"']/g, char => ({
