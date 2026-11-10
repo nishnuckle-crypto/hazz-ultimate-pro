@@ -663,11 +663,36 @@ if (conflictDetected) {
   correlationStatus = 'MIXED SIGNALS';
 }
 
+
 const uniqueSources = new Set(
   analyzedArticles.map(article =>
     String(article.source || '').toLowerCase().trim()
-  )
+  ).filter(Boolean)
 );
+
+let confidence = 'LOW';
+
+if (
+  analyzedArticles.length >= 10 &&
+  uniqueSources.size >= 4 &&
+  Math.max(bullishPercentage, bearishPercentage) >= 80 &&
+  !conflictDetected
+) {
+  confidence = 'HIGH';
+
+} else if (
+  analyzedArticles.length >= 5 &&
+  uniqueSources.size >= 2 &&
+  Math.max(bullishPercentage, bearishPercentage) >= 65 &&
+  !conflictDetected
+) {
+  confidence = 'MEDIUM';
+}
+
+if (conflictDetected) {
+  correlationStatus = 'MIXED SIGNALS';
+}
+
 
 // ==================================
 // HAZZ NEWS EVENT CLUSTERING
@@ -676,31 +701,31 @@ const uniqueSources = new Set(
 const eventGroups = [
   {
     name: 'FED / INTEREST RATES',
-    keywords: /\b(federal reserve|fomc|interest rates?|rate cuts?|rate hikes?|powell|monetary policy|hawkish|dovish|fed officials|fed meeting|federal funds rate)\b/i
+    keywords: /\b(federal reserve|fomc|interest rates?|rate cuts?|rate hikes?|powell|monetary policy|hawkish|dovish|fed officials|fed meeting|federal funds rate|fed decision|rate expectations|central bank policy)\b/i
   },
   {
     name: 'INFLATION / CPI / PCE',
-    keywords: /\b(inflation|cpi|pce|consumer prices|producer prices|disinflation|core inflation|price pressures)\b/i
+    keywords: /\b(inflation|cpi|pce|consumer prices|producer prices|disinflation|core inflation|price pressures|inflation data|inflation report|inflation expectations|prices rise|prices fall|cost of living|consumer price index|producer price index)\b/i
   },
   {
     name: 'EMPLOYMENT / NFP',
-    keywords: /\b(nfp|nonfarm payrolls|non-farm payrolls|payrolls|unemployment rate|jobless claims|labor market|labour market|jobs report|employment data|job growth|hiring)\b/i
+    keywords: /\b(nfp|nonfarm payrolls|non-farm payrolls|payrolls|unemployment rate|jobless claims|labor market|labour market|jobs report|employment data|job growth|hiring|employment report|initial claims|continuing claims|wage growth|average hourly earnings|job openings|labor force)\b/i
   },
   {
     name: 'GDP / ECONOMIC GROWTH',
-    keywords: /\b(gdp|economic growth|recession|economic activity|business activity|economic outlook|growth outlook)\b/i
+    keywords: /\b(gdp|gross domestic product|economic growth|recession|economic activity|business activity|economic outlook|growth outlook|economic expansion|economic contraction|manufacturing activity|services activity)\b/i
   },
   {
     name: 'TREASURY YIELDS',
-    keywords: /\b(treasury yields|bond yields|10.year yield|10.year treasury|real yields|real interest rates|government bond yields)\b/i
+    keywords: /\b(treasury yields|bond yields|10.year yield|10.year treasury|real yields|real interest rates|government bond yields|treasury bonds|us yields|bond market yields)\b/i
   },
   {
     name: 'GEOPOLITICAL RISK',
-    keywords: /\b(geopolitical risk|geopolitical tensions|military conflict|armed conflict|military escalation|war in|war between|sanctions against|middle east conflict|iran israel|russia ukraine|ceasefire|peace talks)\b/i
+    keywords: /\b(geopolitical risk|geopolitical tensions|military conflict|armed conflict|military escalation|war in|war between|sanctions against|middle east conflict|iran israel|russia ukraine|ceasefire|peace talks|military attack|regional conflict|trade war)\b/i
   },
   {
     name: 'GOLD MARKET',
-    keywords: /\b(gold prices?|gold market|gold futures|gold bullion|xauusd|precious metals|gold demand|gold buying|gold selling)\b/i
+    keywords: /\b(gold prices?|gold market|gold futures|gold bullion|xauusd|precious metals|gold demand|gold buying|gold selling|gold rally|gold decline|gold trading|spot gold|gold price forecast)\b/i
   }
 ];
 
@@ -748,36 +773,44 @@ const activeEvents = eventResults.filter(event =>
   event.total > 0
 );
 
+
 const impactRules = {
   'FED / INTEREST RATES': {
-    bullish: /\b(dovish|rate cut|rate cuts|cuts interest rates|monetary easing|policy easing|easier policy|interest rate reduction|lower borrowing costs|fed signals cuts|fed expected to cut)\b/i,
-    bearish: /\b(hawkish|rate hike|rate hikes|raises interest rates|higher for longer|monetary tightening|interest rate increase|higher borrowing costs|fed signals hikes|fed holds rates high)\b/i
+    bullish: /\b(dovish|rate cut|rate cuts|cuts interest rates|monetary easing|policy easing|easier policy|interest rate reduction|lower borrowing costs|fed signals cuts|fed expected to cut|markets expect rate cuts|lower interest rate expectations|fed pivots dovish)\b/i,
+    bearish: /\b(hawkish|rate hike|rate hikes|raises interest rates|higher for longer|monetary tightening|interest rate increase|higher borrowing costs|fed signals hikes|fed holds rates high|markets expect rate hikes|higher interest rate expectations|fed pivots hawkish)\b/i
   },
+
   'INFLATION / CPI / PCE': {
-    bullish: /\b(cooling inflation|inflation cools|inflation eases|softer inflation|disinflation|lower than expected inflation|inflation declines|inflation slows|consumer prices cool|price pressures ease|CPI falls|PCE falls|core inflation slows|inflation below expectations)\b/i,
-    bearish: /\b(hotter inflation|inflation rises|sticky inflation|inflation stays elevated|higher than expected inflation|inflation runs hot|inflation accelerates|consumer prices rise|price pressures increase|CPI rises|PCE rises|core inflation climbs|inflation above expectations)\b/i
+    bullish: /\b(cooling inflation|inflation cools|inflation eases|softer inflation|disinflation|lower than expected inflation|inflation declines|inflation slows|consumer prices cool|price pressures ease|cpi falls|pce falls|core inflation slows|inflation below expectations|inflation undershoots forecasts|prices rise more slowly)\b/i,
+    bearish: /\b(hotter inflation|inflation rises|sticky inflation|inflation stays elevated|higher than expected inflation|inflation runs hot|inflation accelerates|consumer prices rise|price pressures increase|cpi rises|pce rises|core inflation climbs|inflation above expectations|inflation overshoots forecasts|prices rise faster)\b/i
   },
+
   'EMPLOYMENT / NFP': {
-    bullish: /\b(weak jobs|jobs miss|payrolls miss|unemployment rises|job losses|weak hiring|labor market weakens|labour market weakens|employment declines|fewer jobs|hiring slows|nonfarm payrolls fall|non-farm payrolls fall|jobless claims rise|layoffs increase|employment below expectations)\b/i,
-    bearish: /\b(strong jobs|jobs beat|payrolls beat|unemployment falls|strong hiring|labor market strengthens|labour market strengthens|employment increases|more jobs|hiring accelerates|nonfarm payrolls rise|non-farm payrolls rise|jobless claims fall|employment above expectations)\b/i
+    bullish: /\b(weak jobs|jobs miss|payrolls miss|unemployment rises|job losses|weak hiring|labor market weakens|labour market weakens|employment declines|fewer jobs|hiring slows|nonfarm payrolls fall|non-farm payrolls fall|jobless claims rise|layoffs increase|employment below expectations|wage growth slows|job openings decline)\b/i,
+    bearish: /\b(strong jobs|jobs beat|payrolls beat|unemployment falls|strong hiring|labor market strengthens|labour market strengthens|employment increases|more jobs|hiring accelerates|nonfarm payrolls rise|non-farm payrolls rise|jobless claims fall|employment above expectations|wage growth accelerates|job openings increase)\b/i
   },
+
   'GDP / ECONOMIC GROWTH': {
-    bullish: /\b(recession|economic contraction|growth slows|economic slowdown|GDP contracts|GDP misses|growth below expectations|economy weakens|economic activity slows|business activity declines)\b/i,
-    bearish: /\b(strong economic growth|growth accelerates|GDP beats|economic expansion|economy strengthens|growth above expectations|economic activity expands|business activity improves)\b/i
+    bullish: /\b(recession|economic contraction|growth slows|economic slowdown|gdp contracts|gdp misses|growth below expectations|economy weakens|economic activity slows|business activity declines|contraction in economic activity)\b/i,
+    bearish: /\b(strong economic growth|growth accelerates|gdp beats|economic expansion|economy strengthens|growth above expectations|economic activity expands|business activity improves|stronger than expected growth)\b/i
   },
+
   'TREASURY YIELDS': {
-    bullish: /\b(yields fall|yield falls|yields decline|falling yields|lower treasury yields|real yields fall|bond yields retreat|treasury yields drop|yields slide|real rates fall)\b/i,
-    bearish: /\b(yields rise|yield rises|yields climb|rising yields|higher treasury yields|real yields rise|bond yields advance|treasury yields jump|yields surge|real rates rise)\b/i
+    bullish: /\b(yields fall|yield falls|yields decline|falling yields|lower treasury yields|real yields fall|bond yields retreat|treasury yields drop|yields slide|real rates fall|yields ease|yields pull back)\b/i,
+    bearish: /\b(yields rise|yield rises|yields climb|rising yields|higher treasury yields|real yields rise|bond yields advance|treasury yields jump|yields surge|real rates rise|yields strengthen|yields move higher)\b/i
   },
+
   'GEOPOLITICAL RISK': {
-    bullish: /\b(war escalates|military conflict|armed conflict|geopolitical tensions|flight to safety|safe haven demand|sanctions intensify|military escalation|attack intensifies|regional tensions rise)\b/i,
-    bearish: /\b(ceasefire|peace deal|de-escalation|tensions ease|conflict eases|peace talks progress|diplomatic breakthrough|military tensions ease|peace agreement)\b/i
+    bullish: /\b(war escalates|military conflict|armed conflict|geopolitical tensions|flight to safety|safe haven demand|sanctions intensify|military escalation|attack intensifies|regional tensions rise|safe haven buying|geopolitical uncertainty increases)\b/i,
+    bearish: /\b(ceasefire|peace deal|de-escalation|tensions ease|conflict eases|peace talks progress|diplomatic breakthrough|military tensions ease|peace agreement|geopolitical tensions ease)\b/i
   },
+
   'GOLD MARKET': {
-    bullish: null,
-    bearish: null
+    bullish: /\b(gold rallies|gold rises|gold gains|gold advances|gold jumps|gold climbs|gold surges|gold strengthens|gold hits record high|gold breaks higher|bullish gold momentum)\b/i,
+    bearish: /\b(gold falls|gold declines|gold drops|gold slides|gold retreats|gold weakens|gold tumbles|gold selloff|gold sells off|gold hits session low|bearish gold momentum)\b/i
   }
 };
+
 
 // Positive score = potentially bullish for gold.
 // Negative score = potentially bearish for gold.
@@ -828,34 +861,41 @@ const impactResults = eventGroups.map(group => {
 let isBullish = false;
 let isBearish = false;
 const headline = String(title || '').toLowerCase();
+
 // GOLD MARKET
 if (group.name === 'GOLD MARKET') {
-  const sentiment = String(article.sentiment || '').toUpperCase();
-  isBullish = sentiment === 'BULLISH';
-  isBearish = sentiment === 'BEARISH';
+  isBullish = rules ? rules.bullish.test(headline) : false;
+  isBearish = rules ? rules.bearish.test(headline) : false;
 }
+
 // MACRO EVENT CONTEXT DETECTION
 else if (rules) {
   isBullish = rules.bullish.test(headline);
   isBearish = rules.bearish.test(headline);
+
   // EMPLOYMENT CONTEXT
   if (group.name === 'EMPLOYMENT / NFP') {
     if (/\b(strong employment figures|strong labor market|strong labour market|jobs beat expectations|payrolls beat expectations|employment growth accelerates)\b/i.test(headline)) {
       isBearish = true;
     }
+
     if (/\b(weak employment figures|weak labor market|weak labour market|jobs miss expectations|payrolls miss expectations|employment growth slows)\b/i.test(headline)) {
       isBullish = true;
     }
   }
+
   // FED RATE EXPECTATIONS
   if (group.name === 'FED / INTEREST RATES') {
     if (/\b(rate hike bets|bets on rate hikes|higher rate expectations|markets price in rate hikes)\b/i.test(headline)) {
       isBearish = true;
     }
+
     if (/\b(rate cut bets|bets on rate cuts|lower rate expectations|markets price in rate cuts)\b/i.test(headline)) {
       isBullish = true;
     }
   }
+}
+
   // CONFLICTING EVIDENCE MUST REMAIN NEUTRAL
 }
 if (isBullish && !isBearish) {
@@ -867,41 +907,44 @@ if (isBullish && !isBearish) {
 }
   });
 
-  const directionalTotal = bullish + bearish + neutral;
+  
+const directionalTotal = bullish + bearish;
 
 const score = directionalTotal > 0
   ? Math.round(((bullish - bearish) / directionalTotal) * 100)
   : null;
 
-  let direction = 'INSUFFICIENT EVIDENCE';
+let direction = 'INSUFFICIENT EVIDENCE';
 
-  if (score !== null) {
-    if (score >= 25) {
-      direction = 'POTENTIALLY BULLISH GOLD';
-    } else if (score <= -25) {
-      direction = 'POTENTIALLY BEARISH GOLD';
-    } else {
-      direction = 'MIXED / NEUTRAL';
-    }
+if (score !== null) {
+  if (score >= 25) {
+    direction = 'POTENTIALLY BULLISH GOLD';
+  } else if (score <= -25) {
+    direction = 'POTENTIALLY BEARISH GOLD';
+  } else {
+    direction = 'MIXED / NEUTRAL';
   }
+}
 
-  return {
-    name: group.name,
-    total: matched.length,
-    bullish,
-    bearish,
-    neutral,
-    score,
-    direction,
-    weight: impactWeights[group.name] || 1
-  };
-});
+return {
+  name: group.name,
+  total: matched.length,
+  bullish,
+  bearish,
+  neutral,
+  score,
+  direction,
+  weight: impactWeights[group.name] || 1
+};
+
+
 
 const activeImpactResults = impactResults.filter(event =>
   event.total > 0
 );
 
 const scoredEvents = activeImpactResults.filter(event =>
+  event.score !== null &&
   event.bullish + event.bearish > 0
 );
 
@@ -909,16 +952,30 @@ let overallScore = null;
 
 if (scoredEvents.length > 0) {
   const weightedScore = scoredEvents.reduce(
-    (sum, event) => sum + event.score * event.weight,
+    (sum, event) => {
+      const directionalEvidence = event.bullish + event.bearish;
+
+      const evidenceWeight =
+        Math.min(directionalEvidence, 10) * event.weight;
+
+      return sum + event.score * evidenceWeight;
+    },
     0
   );
 
   const totalWeight = scoredEvents.reduce(
-    (sum, event) => sum + event.weight,
+    (sum, event) => {
+      const directionalEvidence = event.bullish + event.bearish;
+
+      return sum +
+        Math.min(directionalEvidence, 10) * event.weight;
+    },
     0
   );
 
-  overallScore = Math.round(weightedScore / totalWeight);
+  overallScore = totalWeight > 0
+    ? Math.round(weightedScore / totalWeight)
+    : null;
 }
 
 let goldBias = 'INSUFFICIENT EVIDENCE';
@@ -948,6 +1005,7 @@ if (
 ) {
   impactStrength = 'MODERATE';
 }
+
 
 const impactHTML = activeImpactResults.map(event => `
   <div class="event-cluster">
