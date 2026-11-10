@@ -762,7 +762,8 @@ const impactResults = eventGroups.map(group => {
   const headline = String(article.title || '').toLowerCase();
 
   // 1. EXCLUDE IRRELEVANT TOPICS
-  const irrelevant = /\b(bitcoin|cryptocurrency|crypto market|mortgage rates|home mortgage|housing market|real estate|auto industry|collision shops|data center buildout|artificial intelligence accountability)\b/i;
+  const irrelevant =
+  /\b(bitcoin|cryptocurrency|crypto market|mortgage|homebuyers|homebuyer|housing|real estate|property market|rent prices|auto industry|collision shops|data center|artificial intelligence|accountability in the age of ai|household costs|younger americans|consumer costs|high-yield savings|savings account|bank deposit|agribusiness|commercial property|commercial real estate|pricing contracts|scholar spotlight|committee hearing|removal of lisa|wall street futures|stock futures|dow jones|s&p 500|nasdaq|equity market|stock market|corporate earnings|credit supply|credit market|corporate bonds|consumer credit|bank lending|loan demand|mortgage rates|prescription for productivity|healthy kids|tsx futures|taipei trading|new zealand dollar|nzd/usd|nzd-usd)\b/i;
 
   if (irrelevant.test(headline)) return false;
 
