@@ -3054,9 +3054,13 @@ window.addEventListener('error', function(event) {
   const box = document.getElementById('message');
 
   if (box) {
-    box.textContent =
-      'JAVASCRIPT ERROR: ' +
-      (event.message || 'Unknown error');
+    
+box.textContent =
+  'JAVASCRIPT ERROR: ' +
+  (event.message || 'Unknown error') +
+  ' | LINE: ' + event.lineno +
+  ' | FILE: ' + event.filename;
+
   }
 });
 
