@@ -704,34 +704,34 @@ const eventResults = eventGroups.map(group => {
     )
   );
 
-  const bullish = matched.filter(article =>
-    String(article.sentiment || '').toUpperCase() === 'BULLISH'
-  ).length;
+  
+const bullish = matched.filter(article =>
+  String(article.sentiment || '').toUpperCase() === 'BULLISH'
+).length;
 
-  const bearish = matched.filter(article =>
-    String(article.sentiment || '').toUpperCase() === 'BEARISH'
-  ).length;
+const bearish = matched.filter(article =>
+  String(article.sentiment || '').toUpperCase() === 'BEARISH'
+).length;
 
-  let direction = 'NEUTRAL / UNCONFIRMED';
+let direction = 'NEUTRAL / UNCONFIRMED';
 
-  if (matched.length >= 2) {
-    if (bullish > bearish) {
-      direction = 'BULLISH';
-    } else if (bearish > bullish) {
-      direction = 'BEARISH';
-    } else {
-      direction = 'MIXED';
-    }
-  }
+if (bullish > bearish) {
+  direction = 'BULLISH';
+} else if (bearish > bullish) {
+  direction = 'BEARISH';
+} else if (bullish > 0 && bearish > 0) {
+  direction = 'MIXED';
+}
 
-  return {
-    name: group.name,
-    total: matched.length,
-    bullish,
-    bearish,
-    direction
-  };
+return {
+  name: group.name,
+  total: matched.length,
+  bullish,
+  bearish,
+  direction
+};
 });
+
 
 // ==================================
 // HAZZ XAUUSD EVENT IMPACT ENGINE
