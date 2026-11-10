@@ -90,18 +90,30 @@ function analyzeImpact(title) {
   return "LOW";
 }
 
+const now = Date.now();
+const MAX_AGE = 24 * 60 * 60 * 1000;
+
 const articles = items.map(item => {
   const title = getTag(item, "title");
+  const publishedAt = getTag(item, "pubDate");
+  const publishedTime = new Date(publishedAt).getTime();
 
   return {
     title,
     source: getTag(item, "source") || "Google News",
     url: getTag(item, "link"),
-    published_at: getTag(item, "pubDate"),
+    published_at: publishedAt,
     sentiment: analyzeSentiment(title),
-    impact: analyzeImpact(title)
+    impact: analyzeImpact(title),
+    articleAge: now - publishedTime
   };
-}).filter(article => article.title && article.url);
+}).filter(article =>
+  article.title &&
+  article.url &&
+  Number.isFinite(article.articleAge) &&
+  article.articleAge >= 0 &&
+  article.articleAge <= MAX_AGE
+);
 
     res.setHeader(
       "Cache-Control",
