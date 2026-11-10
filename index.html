@@ -509,7 +509,9 @@ const articles = (data.articles || []).filter(article => {
 
           <div class="ai-analysis-result"></div>
         </div>
-      `).join('');// ==================================
+      `).join('');
+
+ // ==================================
 // HAZZ ADVANCED NEWS CORRELATION
 // ==================================
 
@@ -985,20 +987,32 @@ const title = article.title.toLowerCase();
 let sentiment = 'NEUTRAL';
 let goldImpact = 'UNCERTAIN';
 let usdImpact = 'UNCERTAIN';
-let importance = 'LOW';
-let analysis = 'No reliable directional evidence found in the headline.';
-let riskNote = 'Headline-based analysis only. Confirm with official economic data and live price action.';
-
-// NEWS IMPORTANCE - RSS PRIORITY
+// NEWS IMPORTANCE ENGINE V2
+const headline = String(article.title || '').toLowerCase();
 const rssImpact = String(article.impact || '').toUpperCase();
 
-if (['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].includes(rssImpact)) {
-  importance = rssImpact;
-} else if (criticalEvent) {
+// OFFICIAL / ACTUAL ECONOMIC EVENTS
+const officialCritical =
+  /\b(fomc rate decision|fed interest rate decision|interest rate announcement|cpi report released|inflation data released|nonfarm payrolls released|non-farm payrolls released|nfp report released|pce report released|gdp report released|fed announces rate cut|fed announces rate hike)\b/i.test(headline);
+
+// HIGH-IMPACT MACRO EVENTS
+const highEvent =
+  /\b(fomc|federal reserve|fed chair|consumer price index|cpi|pce|nonfarm payrolls|non-farm payrolls|nfp|unemployment rate|interest rate decision|rate cut|rate hike|gdp report)\b/i.test(headline);
+
+// MEDIUM-IMPACT EVENTS
+const mediumEvent =
+  /\b(treasury yields|bond yields|dollar index|dxy|gold prices|gold market|geopolitical tensions|jobless claims|retail sales|economic growth|manufacturing data)\b/i.test(headline);
+
+// FORECAST / OPINION DETECTION
+const forecastArticle =
+  /\b(forecast|price forecast|price prediction|outlook|what to expect|analysts expect|economists expect|could|may|might|likely to|expected to|prediction|predicted|will trigger|history says)\b/i.test(headline);
+
+// FINAL IMPORTANCE
+if (officialCritical && !forecastArticle) {
   importance = 'CRITICAL';
-} else if (highEvent) {
+} else if (highEvent && !forecastArticle) {
   importance = 'HIGH';
-} else if (mediumEvent) {
+} else if (mediumEvent || highEvent) {
   importance = 'MEDIUM';
 } else {
   importance = 'LOW';
