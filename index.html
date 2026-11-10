@@ -3048,14 +3048,33 @@ supabase.auth.onAuthStateChange((_event, session) => {
 });
 </script>
 
-  <script>
-document.addEventListener('DOMContentLoaded', function() {
+  
+<script>
+window.addEventListener('error', function(event) {
   const box = document.getElementById('message');
 
   if (box) {
-    box.textContent = box.textContent || 'HTML SCRIPT WORKING';
-  } else {
-    alert('MESSAGE ELEMENT NOT FOUND');
+    box.textContent =
+      'JAVASCRIPT ERROR: ' +
+      (event.message || 'Unknown error');
+  }
+});
+
+window.addEventListener('unhandledrejection', function(event) {
+  const box = document.getElementById('message');
+
+  if (box) {
+    box.textContent =
+      'PROMISE ERROR: ' + String(event.reason);
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  const box = document.getElementById('message');
+
+  if (box && !box.textContent) {
+    box.textContent = 'MODULE NOT STARTED';
   }
 });
 </script>
+
