@@ -350,7 +350,15 @@ window.addEventListener('unhandledrejection', (event) => {
     'PROMISE ERROR: ' + event.reason;
 });
 
-message.textContent = 'SCRIPT LOADED';
+message.textContent = 'LOGIN SYSTEM READY';
+
+document.getElementById('authButton').addEventListener('click', () => {
+  message.textContent = 'LOGIN BUTTON WORKING';
+});
+
+document.getElementById('switchButton').addEventListener('click', () => {
+  message.textContent = 'CREATE ACCOUNT BUTTON WORKING';
+});
   
 function showDashboard(user) {
   authPanel.style.display = 'none';
