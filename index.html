@@ -724,9 +724,29 @@ const impactWeights = {
 };
 
 const impactResults = eventGroups.map(group => {
-  const matched = uniqueArticles.filter(article =>
-    group.keywords.test(String(article.title || ''))
-  );
+  const matched = uniqueArticles.filter(article => {
+  const headline = String(article.title || '').toLowerCase();
+
+  // 1. EXCLUDE IRRELEVANT TOPICS
+  const irrelevant = /\b(bitcoin|cryptocurrency|crypto market|mortgage rates|home mortgage|housing market|real estate|auto industry|collision shops|data center buildout|artificial intelligence accountability)\b/i;
+
+  if (irrelevant.test(headline)) return false;
+
+  // 2. GROUP KEYWORD MATCH
+  if (!group.keywords.test(headline)) return false;
+
+  // 3. FILTER IRRELEVANT FED STORIES
+  if (group.name === 'FED / INTEREST RATES') {
+    const fedRelevant = /\b(federal reserve|fomc|interest rate|rate cut|rate hike|monetary policy|inflation|treasury yields|bond yields|powell|hawkish|dovish)\b/i;
+
+    const unrelatedFed = /\b(auto industry|collision shops|data center|accountability|artificial intelligence|mortgage|housing)\b/i;
+
+    if (unrelatedFed.test(headline)) return false;
+    if (!fedRelevant.test(headline)) return false;
+  }
+
+  return true;
+});
 
   let bullish = 0;
   let bearish = 0;
