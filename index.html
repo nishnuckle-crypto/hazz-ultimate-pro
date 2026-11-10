@@ -607,31 +607,31 @@ const uniqueSources = new Set(
 const eventGroups = [
   {
     name: 'FED / INTEREST RATES',
-    keywords: /\b(federal reserve|fed|fomc|interest rate|rate cut|rate hike|powell|monetary policy|hawkish|dovish)\b/i
+    keywords: /\b(federal reserve|fomc|interest rates?|rate cuts?|rate hikes?|powell|monetary policy|hawkish|dovish|fed officials|fed meeting|federal funds rate)\b/i
   },
   {
     name: 'INFLATION / CPI / PCE',
-    keywords: /\b(inflation|cpi|pce|consumer prices|producer prices|disinflation)\b/i
+    keywords: /\b(inflation|cpi|pce|consumer prices|producer prices|disinflation|core inflation|price pressures)\b/i
   },
   {
     name: 'EMPLOYMENT / NFP',
-    keywords: /\b(nfp|nonfarm payrolls|payrolls|employment|unemployment|jobless claims|labor market|labour market|jobs report)\b/i
+    keywords: /\b(nfp|nonfarm payrolls|non-farm payrolls|payrolls|unemployment rate|jobless claims|labor market|labour market|jobs report|employment data|job growth|hiring)\b/i
   },
   {
     name: 'GDP / ECONOMIC GROWTH',
-    keywords: /\b(gdp|economic growth|recession|economic activity|business activity)\b/i
+    keywords: /\b(gdp|economic growth|recession|economic activity|business activity|economic outlook|growth outlook)\b/i
   },
   {
     name: 'TREASURY YIELDS',
-    keywords: /\b(treasury yields|bond yields|10.year yield|10.year treasury|real yields)\b/i
+    keywords: /\b(treasury yields|bond yields|10.year yield|10.year treasury|real yields|real interest rates|government bond yields)\b/i
   },
   {
     name: 'GEOPOLITICAL RISK',
-    keywords: /\b(geopolitical|war|military conflict|sanctions|middle east|iran|israel|ukraine|russia)\b/i
+    keywords: /\b(geopolitical risk|geopolitical tensions|military conflict|armed conflict|military escalation|war in|war between|sanctions against|middle east conflict|iran israel|russia ukraine|ceasefire|peace talks)\b/i
   },
   {
     name: 'GOLD MARKET',
-    keywords: /\b(gold|bullion|xauusd|precious metals)\b/i
+    keywords: /\b(gold prices?|gold market|gold futures|gold bullion|xauusd|precious metals|gold demand|gold buying|gold selling)\b/i
   }
 ];
 
@@ -735,11 +735,11 @@ const impactResults = eventGroups.map(group => {
   // 2. GROUP KEYWORD MATCH
   if (!group.keywords.test(headline)) return false;
 
-  // 3. FILTER IRRELEVANT FED STORIES
+    // 3. FILTER IRRELEVANT FED STORIES
   if (group.name === 'FED / INTEREST RATES') {
-    const fedRelevant = /\b(federal reserve|fomc|interest rate|rate cut|rate hike|monetary policy|inflation|treasury yields|bond yields|powell|hawkish|dovish)\b/i;
+    const fedRelevant = /\b(federal reserve|fomc|interest rates?|rate cuts?|rate hikes?|powell|monetary policy|hawkish|dovish|fed officials|fed meeting|federal funds rate)\b/i;
 
-    const unrelatedFed = /\b(auto industry|collision shops|data center|accountability|artificial intelligence|mortgage|housing)\b/i;
+    const unrelatedFed = /\b(auto industry|collision shops|data center|accountability|artificial intelligence|mortgage|housing|real estate)\b/i;
 
     if (unrelatedFed.test(headline)) return false;
     if (!fedRelevant.test(headline)) return false;
