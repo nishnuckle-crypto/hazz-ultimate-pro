@@ -322,6 +322,18 @@ const password = document.getElementById('password');
 const message = document.getElementById('message');
 const authPanel = document.getElementById('authPanel');
 const dashboard = document.getElementById('dashboard');
+console.log('HAZZ SCRIPT STARTED');
+
+window.addEventListener('error', (event) => {
+  document.getElementById('message').textContent =
+    'ERROR: ' + event.message;
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  document.getElementById('message').textContent =
+    'PROMISE ERROR: ' + event.reason;
+});
+
 message.textContent = 'SCRIPT LOADED';
   
 function showDashboard(user) {
