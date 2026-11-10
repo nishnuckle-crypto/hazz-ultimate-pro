@@ -643,25 +643,7 @@ const conflictDetected =
   bearishScore > 0 &&
   Math.abs(bullishPercentage - bearishPercentage) < 20;
 
-let confidence = 'LOW';
 
-if (
-  analyzedArticles.length >= 10 &&
-  Math.max(bullishPercentage, bearishPercentage) >= 80 &&
-  !conflictDetected
-) {
-  confidence = 'HIGH';
-} else if (
-  analyzedArticles.length >= 5 &&
-  Math.max(bullishPercentage, bearishPercentage) >= 65 &&
-  !conflictDetected
-) {
-  confidence = 'MEDIUM';
-}
-
-if (conflictDetected) {
-  correlationStatus = 'MIXED SIGNALS';
-}
 
 
 const uniqueSources = new Set(
