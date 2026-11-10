@@ -430,7 +430,8 @@ if (module === 'news') {
         throw new Error(data.error || 'News unavailable');
       }
 
-      // NEWS RELEVANCE FILTER V4
+      
+// NEWS RELEVANCE FILTER V5
 const seenTitles = new Set();
 
 const articles = (data.articles || []).filter(article => {
@@ -438,13 +439,13 @@ const articles = (data.articles || []).filter(article => {
     .toLowerCase()
     .trim();
 
-  // 1. EXCLUDE UNRELATED FINANCIAL NEWS
+  // 1. EXCLUDE UNRELATED TOPICS
   const irrelevant =
-    /\b(bitcoin|cryptocurrency|crypto market|mortgage|homebuyers|homebuyer|housing|real estate|property market|rent prices|auto industry|collision shops|data center|artificial intelligence|accountability in the age of ai|household costs|younger americans|consumer costs|high-yield savings|savings account|bank deposit|agribusiness|commercial property|commercial real estate|pricing contracts|scholar spotlight|committee hearing|removal of lisa)\b/i;
+    /\b(bitcoin|cryptocurrency|crypto market|mortgage|homebuyers|homebuyer|housing|real estate|property market|rent prices|auto industry|collision shops|data center|artificial intelligence|accountability in the age of ai|household costs|younger americans|consumer costs|high-yield savings|savings account|bank deposit|agribusiness|commercial property|commercial real estate|pricing contracts|scholar spotlight|committee hearing|removal of lisa|wall street futures|stock futures|dow jones|s&p 500|nasdaq|equity market|stock market|corporate earnings|credit supply|credit market|corporate bonds|consumer credit|bank lending|loan demand|mortgage rates)\b/i;
 
   if (irrelevant.test(title)) return false;
 
-  // 2. REQUIRE RELEVANT MACRO OR GOLD CONTEXT
+  // 2. REQUIRE RELEVANT GOLD / USD / MACRO CONTEXT
   const relevant =
     /\b(gold|xauusd|precious metals|bullion|forex|foreign exchange|us dollar|u\.s\. dollar|dollar index|dxy|federal reserve|fed officials|fed meeting|fomc|monetary policy|interest rate decision|rate cuts?|rate hikes?|hawkish|dovish|inflation|cpi|pce|consumer prices|producer prices|nonfarm payrolls|non-farm payrolls|nfp|payrolls|unemployment|jobless claims|labor market|labour market|employment data|jobs report|gdp|recession|economic growth|economic slowdown|treasury yields|bond yields|real yields|geopolitical|military conflict|sanctions|ceasefire|safe haven)\b/i;
 
@@ -461,6 +462,7 @@ const articles = (data.articles || []).filter(article => {
 
   return true;
 }).slice(0, 20);
+
 
       const escapeHTML = value =>
         String(value || '').replace(/[&<>"']/g, char => ({
