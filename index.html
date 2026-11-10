@@ -1293,11 +1293,13 @@ resultBox.innerHTML = `
 `;
 
 
-    button.disabled = false;
+        button.disabled = false;
     button.textContent = '📊 FREE MARKET ANALYSIS';
 
-  });
-  
+  }); // CLOSE addEventListener
+
+}); // CLOSE forEach
+
     } catch (error) {
       status.textContent =
         'LIVE NEWS ERROR: ' + error.message;
