@@ -315,7 +315,9 @@ button{width:100%;padding:14px;margin-top:12px;background:#d9b56d;border:0;borde
 let supabase;
 
 document.getElementById('message').textContent =
-  'MODULE STARTED';
+  'MODULE STARTED - TEST';
+
+console.log('MODULE STARTED - TEST');
 
 try {
   const { createClient } = await import(
