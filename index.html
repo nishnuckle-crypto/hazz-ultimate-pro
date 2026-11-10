@@ -878,16 +878,15 @@ else if (rules) {
   }
 }
 
-  // CONFLICTING EVIDENCE MUST REMAIN NEUTRAL
-}
-if (isBullish && !isBearish) {
-  bullish++;
-} else if (isBearish && !isBullish) {
-  bearish++;
-} else {
-  neutral++;
-}
-  });
+    // CONFLICTING EVIDENCE MUST REMAIN NEUTRAL
+  if (isBullish && !isBearish) {
+    bullish++;
+  } else if (isBearish && !isBullish) {
+    bearish++;
+  } else {
+    neutral++;
+  }
+});
 
   
 const directionalTotal = bullish + bearish;
@@ -918,8 +917,6 @@ return {
   direction,
   weight: impactWeights[group.name] || 1
 };
-
-
 
 const activeImpactResults = impactResults.filter(event =>
   event.total > 0
