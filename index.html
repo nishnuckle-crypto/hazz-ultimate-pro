@@ -548,17 +548,22 @@ const articles = (data.articles || []).filter(article => {
 const correlationBox = document.createElement('div');
 correlationBox.className = 'ai-analysis-panel';
 
+
 const normalizeHeadline = title =>
   String(title || '')
     .toLowerCase()
-    .replace(/https?:\/\/\S+/g, '')
-    .replace(/[^\w\s]/g, ' ')
-    .replace(/\b(the|a|an|to|of|in|on|for|and|as|at|by|with)\b/g, ' ')
+    .replace(/https?:\/\/\S+/g, ' ')
+    .replace(/&amp;/g, ' and ')
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\b(the|a|an|to|of|in|on|for|and|as|at|by|with|from|after|before|over|into)\b/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 
+
 const tokens = title =>
   new Set(normalizeHeadline(title).split(' ').filter(word => word.length > 2));
+
 
 const similarity = (a, b) => {
   const A = tokens(a);
@@ -567,21 +572,31 @@ const similarity = (a, b) => {
   if (!A.size || !B.size) return 0;
 
   const intersection = [...A].filter(word => B.has(word)).length;
-  const union = new Set([...A, ...B]).size;
 
-  return intersection / union;
+  const similarityA = intersection / A.size;
+  const similarityB = intersection / B.size;
+
+  return Math.min(similarityA, similarityB);
 };
 
+
 // REMOVE NEAR-DUPLICATE HEADLINES
+
 const uniqueArticles = [];
+let duplicateCount = 0;
 
 articles.forEach(article => {
   const duplicate = uniqueArticles.some(existing =>
-    similarity(article.title, existing.title) >= 0.65
+    similarity(article.title, existing.title) >= 0.85
   );
 
-  if (!duplicate) uniqueArticles.push(article);
+  if (duplicate) {
+    duplicateCount++;
+  } else {
+    uniqueArticles.push(article);
+  }
 });
+
 
 // SOURCE WEIGHTING
 const sourceWeight = source => {
